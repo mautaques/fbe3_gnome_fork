@@ -19,12 +19,16 @@
 
 import sys
 import gi
+import os
 
 gi.require_version('Gtk', '4.0')
 gi.require_version('Adw', '1')
 
 from gi.repository import Gtk, Gio, Adw
 from .window import FbeWindow
+cur_path = os.path.realpath(__file__)
+base_path = os.path.dirname(os.path.dirname(cur_path))
+sys.path.insert(1, base_path)
 
 
 class FbeApplication(Adw.Application):
@@ -37,6 +41,7 @@ class FbeApplication(Adw.Application):
         self.create_action('about', self.on_about_action)
         self.set_accels_for_action('win.new-project', ['<Ctrl>n'])
         self.set_accels_for_action('win.open-project', ['<Ctrl>o'])
+        print(cur_path)
 
     def do_activate(self):
         """Called when the application is activated.

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+    <requires lib="gtk" version="4.0"/>
+    <requires lib="Adw" version="1.0"/>
+    <object class="GtkActionBar" id="action_bar">
+        <child type="start">
+            <object class="GtkMenuButton" id="project_btn">
+                <property name="menu-model">primary_menu</property>
+                <property name="child">
+                    <object class="AdwButtonContent">
+                    <property name="label" translatable="yes">_This Project</property>
+                    <property name="use-underline">True</property>
+                    </object>
+                </property>
+            </object>
+        </child>
+    </object>
+    <object class="GtkMenuButton">
+        <property name="primary">True</property>
+        <property name="icon-name">plus-symbolic</property>
+        <property name="tooltip-text" translatable="yes">Menu</property>
+        <property name="menu-model">primary_menu</property>
+    </object>
+    <menu id="primary_menu">
+    <section>
+      <item>
+        <attribute name="label" translatable="yes">_App</attribute>
+      </item>
+      <item>
+        <attribute name="label" translatable="yes">_System Configuration</attribute>
+      </item>
+    </section>
+  </menu>
+</interface>

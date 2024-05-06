@@ -17,7 +17,7 @@
                 <property name="tooltip-text" translatable="yes">Menu</property>
                 <property name="menu-model">primary_menu</property>
               </object>
-            </child>"
+            </child>
             <child type="end">
               <object class="GtkMenuButton">
                 <property name="primary">False</property>
@@ -28,20 +28,129 @@
             </child>
           </object>
         </child>
-      </object>
-      <object class="GtkBox">
-        <property name="orientation">vertical</property>
-        <child>
-          <object class="GtkLabel" id="lab">
-            <property name="label">Hi</property>
-            <attributes>
-              <attribute name="weight" value="bold"/>
-              <attribute name="scale" value="2"/>
-            </attributes>
+
+        <property name="content">
+          <object class="GtkBox" id="vbox_window">
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="GtkActionBar" id="action_bar">
+                <child type="start">
+                  <object class="GtkButton" id="new_fb_btn">
+                    <property name="child">
+                      <object class="AdwButtonContent">
+                        <property name="icon-name">new_fb</property>
+                        <property name="label" translatable="yes">_New Blank FB</property>
+                        <property name="use-underline">True</property>
+                      </object>
+                    </property>
+                  </object>
+                </child>"
+                <child type="start">
+                  <object class="GtkButton" id="save_btn">
+                    <property name="child">
+                      <object class="AdwButtonContent">
+                        <property name="icon-name">save</property>
+                        <property name="label" translatable="yes">_Save</property>
+                        <property name="use-underline">True</property>
+                      </object>
+                    </property>
+                  </object>
+                </child>
+                <child type="start">
+                  <object class="GtkButton" id="save_as_btn">
+                    <property name="child">
+                      <object class="AdwButtonContent">
+                        <property name="icon-name">save_as</property>
+                        <property name="label" translatable="yes">_Save as</property>
+                        <property name="use-underline">True</property>
+                      </object>
+                    </property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkBox" id="hbox_window">
+                <property name="orientation">horizontal</property>
+                <child>
+                  <object class="GtkFrame">
+                    <property name="vexpand">true</property>
+                    <property name="label-xalign">0.5</property>
+                    <child type="label">
+                      <object class="GtkLabel" id="frame_label">
+                        <property name="label">Editor Workspace</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkBox" id="hbox_buttons">
+                        <property name="orientation">horizontal</property>
+                        <property name="spacing">8</property>
+                        <property name="margin-start">20</property>
+                        <property name="margin-end">20</property>
+                        <property name="margin-top">8</property>
+                        <child>
+                          <object class="GtkBox" id="vbox1_btn">
+                            <property name="orientation">vertical</property>
+                            <property name="homogeneous">false</property>
+                            <child>
+                              <object class="GtkButton" id="add_fb_btn">
+                                <property name="icon-name">add</property>
+                                <property name="has-frame">false</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="connect_fb_btn">
+                                <property name="icon-name">connect</property>
+                                <property name="has-frame">false</property>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkBox" id="vbox2_btn">
+                            <property name="orientation">vertical</property>
+                            <property name="homogeneous">false</property>
+                            <child>
+                              <object class="GtkButton" id="move_fb_btn">
+                                <property name="icon-name">move</property>
+                                <property name="has-frame">false</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="remove_fb_btn">
+                                <property name="icon-name">delete</property>
+                                <property name="has-frame">false</property>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkBox" id="vbox3_btn">
+                            <property name="orientation">vertical</property>
+                            <property name="homogeneous">false</property>
+                            <child>
+                              <object class="GtkButton" id="edit_fb_btn">
+                                <property name="icon-name">edit</property>
+                                <property name="has-frame">false</property>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkNotebook" id="notebook">
+                    <property name="show-border">true</property>
+                    <property name="scrollable">true</property>
+                  </object>
+                </child>
+              </object>
+            </child>
           </object>
-        </child>
+        </property>
       </object>
-      <object class="GtkDrawingArea" id="main_fbe"></object>
     </property>
   </template>
 

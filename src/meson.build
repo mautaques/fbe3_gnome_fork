@@ -30,6 +30,13 @@ fbe_sources = [
   '__init__.py',
   'main.py',
   'window.py',
+  'fb_editor.py',
+  'ecc_editor.py',
+  'ecc_renderer.py',
+  'fb_renderer.py',
+  'base.py',
+  'function_block.py',
+  'xmlParser.py'
 ]
 
 install_data(fbe_sources, install_dir: moduledir)
