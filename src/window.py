@@ -52,8 +52,8 @@ class FbeWindow(Adw.ApplicationWindow):
         self.add_action(open_action)
 
         self.selected_tool = None
-        self.notebook.connect('create-window', self.on_notebookbook_create_window)
-        self.notebook.connect('page-removed', self.on_notebookbook_page_removed)
+        self.notebook.connect('create-window', self.on_notebook_create_window)
+        self.notebook.connect('page-removed', self.on_notebook_page_removed)
         self.add_fb_btn.connect('clicked', self.add_fb_dialog)
         self.edit_fb_btn.connect('clicked',self.inspect_function_block)
         self.connect_fb_btn.connect('clicked', self.connect_function_block)
@@ -172,7 +172,8 @@ class FbeWindow(Adw.ApplicationWindow):
     def add_tab_editor(self, fb_project, label, fb_chosen):
         already_open_in = None
         if already_open_in is None:
-            editor = SystemEditor(fb_project)
+            window = self.get_ancestor(Gtk.Window)
+            editor = SystemEditor(window, fb_project)
             self.add_tab(editor, label)
         else:
             tab_id, window = already_open_in
@@ -218,8 +219,7 @@ class FbeWindow(Adw.ApplicationWindow):
         _id = self.notebook.get_current_page()
         return self.notebook.get_nth_page(_id)
 
-    def on_notebookbook_create_window(self,notebookbook,widget,x,y):
-        # handler for dropping outside of notebookbook
+    def on_notebook_create_window(self,notebookbook,widget,x,y):
         new_window = self.props.application.add_window()
 
         new_window.move(x, y)
@@ -227,7 +227,7 @@ class FbeWindow(Adw.ApplicationWindow):
         new_window.present()
         return new_window.notebook
 
-    def on_notebookbook_page_removed(self, notebookbook, child, page):
+    def on_notebook_page_removed(self, notebookbook, child, page):
         if notebookbook.get_n_pages() == 0:
             self.destroy()
         return True

@@ -5,13 +5,21 @@ from gi.repository import Gdk
 from gi.repository import GLib
 from .base import PageMixin
 
+@Gtk.Template(resource_path='/com/lapas/Fbe/menu.ui')
 class SystemEditor(PageMixin, Gtk.Box):
-    def __init__(self, fb_project=None, current_tool=None, *args, **kwargs):
+    __gtype_name__ = 'SystemEditor'
+    
+    project_menu_button = Gtk.Template.Child()
+    system_config_menu = Gtk.Template.Child()
+    primary_menu = Gtk.Template.Child()
+    
+    def __init__(self, window, fb_project=None, current_tool=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        
         self.fb_project = fb_project
         self.current_tool = current_tool
-        self.click_timer_id = None  # Used to differentiate between single and double clicks
-        self.double_click_interval = 300  # Milliseconds to wait for double click
+        self.window = window
+        self.applications_editors = list()
         
         self.open_menu = Gio.Menu.new()
         self.project_bar = Gtk.ActionBar(valign=Gtk.Align.START)
@@ -120,22 +128,35 @@ class SystemEditor(PageMixin, Gtk.Box):
                 
         # ----------------------------------------- #
         
-        gesture_click = Gtk.GestureClick()
-        gesture_click.set_button(2)  # Set to listen to left-click
-        gesture_click.connect("pressed", self.on_gesture_click)  # Connect event handler
-        self.applications_list.add_controller(gesture_click)  # Add to the list box
-        self.sys_config_list.add_controller(gesture_click)  # Add to the list box
-
-                
+        gesture_click_applications = Gtk.GestureClick()
+        gesture_click_applications.set_button(1)  # Set to listen to left-click
+        gesture_click_applications.connect("pressed", self.on_gesture_click_applications)  # Connect event handler
+        self.applications_list.add_controller(gesture_click_applications)  # Add to the list box
+        
+        gesture_click_sys_config = Gtk.GestureClick()
+        gesture_click_sys_config.set_button(1)  # Set to listen to left-click
+        gesture_click_sys_config.connect("pressed", self.on_gesture_click_sys_config)  # Connect event handler
+        self.sys_config_list.add_controller(gesture_click_sys_config)  # Add to the list box                
                     
-        self.popover = Gtk.PopoverMenu()
-        self.popover.set_menu_model(self.open_menu)
+        # self.popover = Gtk.PopoverMenu()
+        # self.popover.set_menu_model(self.open_menu)
 
-        self.open_menu_button = Gtk.MenuButton()
-        self.open_menu_button.set_popover(self.popover)
-        self.open_menu_button.set_label(self.fb_project.name)
-
-        self.project_bar.pack_start(self.open_menu_button)
+        # self.project_menu_button.set_popover(self.popover)
+        self.project_menu_button.set_label(self.fb_project.name)
+        
+        for app in self.fb_project.applications:
+            label = app.name
+            label_action = label+"-app"
+            self._create_action(label_action, self.on_my_app)
+            self.primary_menu.append(label, "win."+label_action)
+        
+        for dev in self.fb_project.devices:
+            label = dev.name
+            label_action = label+"-dev"
+            self._create_action(label_action, self.on_my_app)
+            self.system_config_menu.append(label, "win."+label_action)
+            
+        self.project_bar.pack_start(self.project_menu_button)
 
     def _create_entry_(self, section, entry_name):
         hbox = Gtk.Box(orientation = Gtk.Orientation.HORIZONTAL, margin_start=5, margin_top=5, margin_end=5, margin_bottom=5)
@@ -147,21 +168,32 @@ class SystemEditor(PageMixin, Gtk.Box):
         hbox.append(label)
         hbox.append(entry)
         
-    def on_row_activated(self, list_box, row):
-        list_box_row = list_box.get_selected_row()
-        if list_box_row:
-            label = list_box_row.get_child()  # Get the label
-            print(label.get_label())
             
-    def on_gesture_click(self, gesture, n_press, x, y):
+    def on_gesture_click_applications(self, gesture, n_press, x, y):
         if n_press == 2:  # Check if it is a double-click
             target = gesture.get_widget().get_selected_row()
             if isinstance(target, Gtk.ListBoxRow):
-                label = target.get_child()  # Get the label
-                if label:
-                    text = label.get_text()  # Get the text from the label
-                    print(f"Double-clicked on row with text: {text}")  # Perform your action here
-
+                app = target.get_child()  # Get the label
+                if isinstance(app, Gtk.Expander):
+                    application = self.fb_project.application_get(app.get_label())
+                    print(application.name)
+                    # editor = Fun
+                elif isinstance(app, Gtk.Label):
+                    application = self.fb_project.application_get(app.get_label())
+                    print(application.name)
+    
+    def on_gesture_click_sys_config(self, gesture, n_press, x, y):
+        if n_press == 2:  # Check if it is a double-click
+            target = gesture.get_widget().get_selected_row()
+            if isinstance(target, Gtk.ListBoxRow):
+                dev = target.get_child()  # Get the label
+                if isinstance(dev, Gtk.Expander):
+                    device = self.fb_project.device_get(dev.get_label())
+                    print(device.name)
+                    # editor = Fun
+                elif isinstance(dev, Gtk.Label):
+                    device = self.fb_project.device_get(dev.get_label())
+                    print(device.name)
       
     def save(self, file_path_name=None):
         status = self.selected_fb.save(file_path_name)
@@ -178,23 +210,13 @@ class SystemEditor(PageMixin, Gtk.Box):
         return self
 
     def _create_action(self, action_name, callback, *args):
-        app = self.get_ancestor_window()
-        if app is not None:
-            action = Gio.SimpleAction.new(action_name, None)
-            if not args:
-                action.connect("activate", callback)
-                app.add_action(action)
-            else:
-                action.connect("activate", callback, args)
-                app.add_action(action)
+        action = Gio.SimpleAction.new(action_name, None)
+        if not args:
+            action.connect("activate", callback)
+            self.window.add_action(action)
         else:
-            action = Gio.SimpleAction.new(action_name, None)
-            if not args:
-                action.connect("activate", callback)
-                self.add_action(action)
-            else:
-                action.connect("activate", callback, args)
-                self.add_action(action)
+            action.connect("activate", callback, args)
+            self.window.add_action(action)
 
     def on_my_app(self):
         print('app')
