@@ -883,7 +883,7 @@ class Resource():
     
 class Device():
     def __init__(self, name, type, comment='', x=0.0, y=0.0):
-        self.name
+        self.name = name
         self.type = type
         self.comment = comment
         self.x = x
@@ -907,13 +907,19 @@ class Application():
         self.subapp_network = subapp_network
         
 class System():    
-    def __init__(self, name, comment, application):
+    def __init__(self, name='Untitled', comment=''):
         self.name = name
         self.comment = comment
         self.applications = list()
         self.devices = list()
         self.mapping = list()  # From FB to RES e.g mapping[CTD] = device.RES.CTD
         
+    def applications_name_str(self):
+        app_names = ''
+        for app in self.applications:
+            app_names += app.name + '\n'
+        return app_names
+    
     def device_add(self, device):
         print(f'device {device.name} added')
         self.devices.append(device)
@@ -930,7 +936,7 @@ class System():
     def application_get(self, name):
         for app in self.applications:
             if app.name == name:
-                return name
+                return app
         return None
     
     def mapping_add(self, mapping):
