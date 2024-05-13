@@ -362,8 +362,8 @@ def convert_xml_system(xml):
                 fb_name = read_2.get("Name")
                 fb_type = read_2.get("Type")
                 fb_comment = read_2.get("Comment")
-                fb_x = read_2.get("x")
-                fb_y = read.get("y")
+                fb_x = float(read_2.get("x"))/3
+                fb_y = float(read_2.get("y"))/3
                 fb = FunctionBlock(fb_name, fb_comment, fb_type, fb_x, fb_y)
                 for read_3 in read_2.iter("Parameter"):
                     if fb.variable_get(read_3.get("Name")) is not None:
@@ -407,16 +407,16 @@ def convert_xml_system(xml):
         device_name = read.get("Name")
         device_type = read.get("Type")
         device_comment = read.get("Comment")
-        device_x = read.get("x")
-        device_y = read.get("y")
+        device_x = float(read.get("x"))/3
+        device_y = float(read.get("y"))/3
         DEVICE = Device(device_name, device_type, device_comment, device_x, device_y)
         
         for read_1 in read.iter("Resource"):
             resource_name = read_1.get("Name")
             resource_type = read_1.get("Type")
             resource_comment = read_1.get("Comment")
-            resource_x = read_1.get("x")
-            resource_y = read_1.get("y")
+            resource_x = float(read_1.get("x"))/3
+            resource_y = float(read_1.get("y"))/3
             
             for read_2 in read_1.iter("FBNetwork"):
                 fb_diagram = Composite()
