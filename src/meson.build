@@ -37,7 +37,8 @@ fbe_sources = [
   'base.py',
   'function_block.py',
   'xmlParser.py',
-  'system_editor.py'
+  'system_editor.py',
+  'project_editor.py'
 ]
 
 install_data(fbe_sources, install_dir: moduledir)

@@ -5,46 +5,29 @@ from gi.repository import Gdk
 from gi.repository import GLib
 from .base import PageMixin
 
-@Gtk.Template(resource_path='/com/lapas/Fbe/menu.ui')
 class SystemEditor(PageMixin, Gtk.Box):
-    __gtype_name__ = 'SystemEditor'
     
-    project_menu_button = Gtk.Template.Child()
-    system_config_menu = Gtk.Template.Child()
-    primary_menu = Gtk.Template.Child()
-    
-    def __init__(self, window, fb_project=None, current_tool=None, *args, **kwargs):
+    def __init__(self, window, system=None, current_tool=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
-        self.fb_project = fb_project
+        self.system = system
         self.current_tool = current_tool
         self.window = window
-        self.applications_editors = list()
         
-        self.open_menu = Gio.Menu.new()
-        self.project_bar = Gtk.ActionBar(valign=Gtk.Align.START)
-        self.vpaned = Gtk.Paned(wide_handle=True, orientation = Gtk.Orientation.VERTICAL)
-        self.vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        
+        self.set_orientation(Gtk.Orientation.HORIZONTAL)
+        self.set_margin_start(5)
+        self.set_margin_top(5)
+        self.set_margin_end(5)
+        self.set_margin_bottom(5)
+        self.set_homogeneous(True)
+        self.set_vexpand(True)
         self.info_vbox_left = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.info_vbox_right = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        self.info_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, margin_start=5, margin_top=5, margin_end=5, margin_bottom=5)
-        self.info_hbox.append(self.info_vbox_left)
-        self.info_hbox.append(self.info_vbox_right)
-        self.info_hbox.set_vexpand(True)
-        self.info_hbox.set_homogeneous(True)
         self.info_vbox_left.set_homogeneous(True)
         self.info_vbox_right.set_homogeneous(True)
+        self.append(self.info_vbox_left)
+        self.append(self.info_vbox_right)
         
-        self.vbox.set_vexpand(True)
-        self.vpaned.set_start_child(self.project_bar)
-        self.vpaned.set_resize_start_child(False)
-        self.vpaned.set_end_child(self.info_hbox)
-        self.vpaned.set_resize_end_child(True)
-        self.vbox.append(self.vpaned)
-        self.vbox.set_hexpand(True)
-        self.append(self.vbox)
-      
         self.sys_info_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, margin_start=10, margin_top=10, margin_end=10, margin_bottom=10)
         self.sys_config_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, margin_start=10, margin_top=10, margin_end=10, margin_bottom=10)
         self.applications_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, margin_start=10, margin_top=10, margin_end=10, margin_bottom=10)
@@ -100,7 +83,7 @@ class SystemEditor(PageMixin, Gtk.Box):
         self.applications_list.set_selection_mode(Gtk.SelectionMode.SINGLE)
         self.applications_vbox.append(self.applications_list)
 
-        for app in self.fb_project.applications:
+        for app in self.system.applications:
             if app.subapp_network.function_blocks:
                 app_expander = Gtk.Expander(label=app.name)
                 fb_list = Gtk.ListBox()
@@ -120,12 +103,13 @@ class SystemEditor(PageMixin, Gtk.Box):
                 list_row.set_child(label)
                 self.applications_list.append(list_row)
                 
-        # ------------- System Config ---------------- #
+        # ---------------- System Config ------------------- #
+        
         self.sys_config_list = Gtk.ListBox()
         self.sys_config_list.set_selection_mode(Gtk.SelectionMode.SINGLE)
         self.sys_config_vbox.append(self.sys_config_list)
 
-        for dev in self.fb_project.devices:
+        for dev in self.system.devices:
             if dev.resources:
                 dev_expander = Gtk.Expander(label=dev.name)
                 resources_list = Gtk.ListBox()
@@ -151,26 +135,7 @@ class SystemEditor(PageMixin, Gtk.Box):
         
         self.applications_list.add_controller(gesture_click_applications)  # Add to the list box
         self.sys_config_list.add_controller(gesture_click_sys_device)  # Add to the list box                
-                    
-        # self.popover = Gtk.PopoverMenu()
-        # self.popover.set_menu_model(self.open_menu)
-
-        # self.project_menu_button.set_popover(self.popover)
-        self.project_menu_button.set_label(self.fb_project.name)
         
-        for app in self.fb_project.applications:
-            label = app.name
-            label_action = label+"-app"
-            self._create_action(label_action, self.on_my_app)
-            self.primary_menu.append(label, "win."+label_action)
-        
-        for dev in self.fb_project.devices:
-            label = dev.name
-            label_action = label+"-dev"
-            self._create_action(label_action, self.on_my_app)
-            self.system_config_menu.append(label, "win."+label_action)
-            
-        self.project_bar.pack_start(self.project_menu_button)
 
     def _create_entry_(self, section, entry_name):
         hbox = Gtk.Box(orientation = Gtk.Orientation.HORIZONTAL, margin_start=5, margin_top=5, margin_end=5, margin_bottom=5)
@@ -188,13 +153,13 @@ class SystemEditor(PageMixin, Gtk.Box):
             if isinstance(target, Gtk.ListBoxRow):
                 app = target.get_child()  # Get the label
                 if isinstance(app, Gtk.Expander):
-                    application = self.fb_project.application_get(app.get_label())
+                    application = self.system.application_get(app.get_label())
                     print(application.name)
                     # editor = Fun
                 elif isinstance(app, Gtk.Label):
                     print("here")
                     if not isinstance(app.get_parent(), Gtk.Expander):
-                        application = self.fb_project.application_get(app.get_label())
+                        application = self.system.application_get(app.get_label())
                         print(application.name)
     
     def on_gesture_click_device(self, gesture, n_press, x, y):
@@ -203,11 +168,11 @@ class SystemEditor(PageMixin, Gtk.Box):
             if isinstance(target, Gtk.ListBoxRow):
                 dev = target.get_child()  # Get the label
                 if isinstance(dev, Gtk.Expander):
-                    device = self.fb_project.device_get(dev.get_label())
+                    device = self.system.device_get(dev.get_label())
                     print(device.name)
                     # editor = Fun
                 elif isinstance(dev, Gtk.Label):
-                    device = self.fb_project.device_get(dev.get_label())
+                    device = self.system.device_get(dev.get_label())
                     print(device.name)
     
     def on_gesture_click_resource(self, gesture, n_press, x, y):
@@ -218,7 +183,7 @@ class SystemEditor(PageMixin, Gtk.Box):
                 res = target.get_child()
                 while(not isinstance(target, Gtk.Expander)):
                     target = target.get_parent()
-                dev = self.fb_project.device_get(target.get_label())
+                dev = self.system.device_get(target.get_label())
                 resource = dev.resource_get(res.get_label())
                 print(resource.name)
 
@@ -235,15 +200,6 @@ class SystemEditor(PageMixin, Gtk.Box):
         if self.selected_fb is not None:
             return self.selected_fb.get_name()
         return self
-
-    def _create_action(self, action_name, callback, *args):
-        action = Gio.SimpleAction.new(action_name, None)
-        if not args:
-            action.connect("activate", callback)
-            self.window.add_action(action)
-        else:
-            action.connect("activate", callback, args)
-            self.window.add_action(action)
 
     def on_my_app(self):
         print('app')

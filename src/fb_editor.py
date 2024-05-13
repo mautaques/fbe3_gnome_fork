@@ -8,11 +8,10 @@ from .ecc_editor import EccEditor
 
 
 class FunctionBlockEditor(PageMixin, Gtk.Box):
-    def __init__(self, fb_project=None, fb_diagram=None, selected_fb=None, current_tool=None, inspected_block=None, *args, **kwargs):
+    def __init__(self, app=None, fb_diagram=None, selected_fb=None, current_tool=None, inspected_block=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.set_orientation(Gtk.Orientation.VERTICAL)
-        self.fb_project = fb_project
+        self.app = app
         self.fb_diagram = fb_diagram
         self.selected_fb = selected_fb
         self.selected_event = None
@@ -22,22 +21,19 @@ class FunctionBlockEditor(PageMixin, Gtk.Box):
         self.current_tool = current_tool
         self.inspected_block = inspected_block
         self.fb_count = 0
+        if self.fb_diagram is None:
+            self.fb_diagram = app.subapp_network
 
+        self.set_orientation(Gtk.Orientation.VERTICAL)
         self.paned = Gtk.Paned(wide_handle=True)
-        self.project_bar = Gtk.ActionBar()
-        self.project_frame = Gtk.Frame()
-        self.open_menu = Gio.Menu.new()
+        
         self.scrolled = Gtk.ScrolledWindow.new()
         self.fb_render = FunctionBlockRenderer(self.fb_diagram, self.inspected_block)
         self.sidebox = Gtk.Box(orientation = Gtk.Orientation.VERTICAL, valign=Gtk.Align.FILL)
-        self.vbox = Gtk.Box(orientation = Gtk.Orientation.VERTICAL, valign=Gtk.Align.FILL)
         self.gesture_press = Gtk.GestureClick.new()
         self.gesture_release = Gtk.GestureClick.new()
         self.event_controller = Gtk.EventControllerMotion.new()
-
-        self.project_frame.set_child(self.project_bar)
-        self.vbox.append(self.project_frame)
-        self.append(self.vbox)
+              
         self.append(self.paned)
         self.paned.set_vexpand(True)
         self.paned.set_hexpand(True)
@@ -63,20 +59,6 @@ class FunctionBlockEditor(PageMixin, Gtk.Box):
         self.cursor_crosshair = Gdk.Cursor.new_from_name("crosshair")
         self.fb_render.set_cursor(self.cursor_crosshair)
 
-        # self._create_action('my-app', self.on_my_app)
-        # self._create_action('system-configuration', self.on_system_config)
-
-        # self.open_menu.append("App", "win.my-app")
-        # self.open_menu.append("System Configuration", "win.system_configuration")
-
-        self.popover = Gtk.PopoverMenu()
-        self.popover.set_menu_model(self.open_menu)
-
-        self.open_menu_button = Gtk.MenuButton()
-        self.open_menu_button.set_popover(self.popover)
-        self.open_menu_button.set_label("This Project")
-
-        self.project_bar.pack_start(self.open_menu_button)
 
     def build_treeview(self):
         self.events_liststore = Gtk.ListStore(str, bool, bool, object)

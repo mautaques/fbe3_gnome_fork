@@ -27,6 +27,7 @@ base_path = os.path.dirname(os.path.dirname(cur_path))
 sys.path.insert(1, base_path)
 from .fb_editor import FunctionBlockEditor
 from .system_editor import SystemEditor
+from .project_editor import ProjectEditor
 from .xmlParser import *
 
 @Gtk.Template(resource_path='/com/lapas/Fbe/window.ui')
@@ -62,9 +63,11 @@ class FbeWindow(Adw.ApplicationWindow):
 
     def new_file_dialog(self, action, param=None):
         app = Application('UntitledApp')
-        fb_project = System(name='Untitled')
-        fb_project.application_add(app)
-        self.add_tab_editor(fb_project, fb_project.name, None)
+        system = System(name='Untitled')
+        system.application_add(app)
+        window = self.get_ancestor(Gtk.Window)
+        fb_project = ProjectEditor(window, system)
+        self.add_tab_editor(fb_project, system.name, None)
 
     def open_file_dialog(self, action, parameter):
         # Create a new file selection dialog, using the "open" mode
@@ -94,9 +97,10 @@ class FbeWindow(Adw.ApplicationWindow):
         print(file_name)
         # If the user selected a file...
         if file is not None:
-            # ... open it
-            fb_project = convert_xml_system(file_name)
-            self.add_tab_editor(fb_project, fb_project.name, None)
+            window = self.get_ancestor(Gtk.Window)
+            system = convert_xml_system(file_name)
+            fb_project = ProjectEditor(window, system)
+            self.add_tab_editor(fb_project, system.name, None)
     
     def on_open_response(self, dialog, result):
         file = dialog.open_finish(result)
@@ -171,11 +175,9 @@ class FbeWindow(Adw.ApplicationWindow):
         label = self.notebook.get_tab_label(widget)
         self.add_default_css_provider(label, color)
 
-    def add_tab_editor(self, fb_project, label, fb_chosen):
+    def add_tab_editor(self, editor, label, fb_chosen):
         already_open_in = None
         if already_open_in is None:
-            window = self.get_ancestor(Gtk.Window)
-            editor = SystemEditor(window, fb_project)
             self.add_tab(editor, label)
         else:
             tab_id, window = already_open_in
