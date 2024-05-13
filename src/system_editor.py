@@ -80,16 +80,32 @@ class SystemEditor(PageMixin, Gtk.Box):
         self._create_entry_(self.sys_info_vbox, 'Type: ')
         self._create_entry_(self.sys_info_vbox, 'Description: ')
         
+        # -------------- Gesture Handling ---------------- #
+        
+        gesture_click_applications = Gtk.GestureClick()
+        gesture_click_applications.set_button(1)  # Set to listen to left-click
+        gesture_click_applications.connect("pressed", self.on_gesture_click_applications)  # Connect event handler
+        
+        gesture_click_sys_device = Gtk.GestureClick()
+        gesture_click_sys_device.set_button(1)  # Set to listen to left-click
+        gesture_click_sys_device.connect("pressed", self.on_gesture_click_device)  # Connect event handler
+       
+        gesture_click_sys_resource = Gtk.GestureClick()
+        gesture_click_sys_resource.set_button(1)  # Set to listen to left-click
+        gesture_click_sys_resource.connect("pressed", self.on_gesture_click_resource)  # Connect event handler
+        
         # ------------- Applications List ---------------- #
         
         self.applications_list = Gtk.ListBox()
-        # self.applications_list.connect("row-activated", self.on_row_activated) 
+        self.applications_list.set_selection_mode(Gtk.SelectionMode.SINGLE)
         self.applications_vbox.append(self.applications_list)
 
         for app in self.fb_project.applications:
             if app.subapp_network.function_blocks:
                 app_expander = Gtk.Expander(label=app.name)
                 fb_list = Gtk.ListBox()
+                fb_list.set_show_separators(True)
+                fb_list.set_selection_mode(Gtk.SelectionMode.NONE)
                 app_expander.set_child(fb_list)
                 self.applications_list.append(app_expander)
                 for fb in app.subapp_network.function_blocks:
@@ -106,12 +122,16 @@ class SystemEditor(PageMixin, Gtk.Box):
                 
         # ------------- System Config ---------------- #
         self.sys_config_list = Gtk.ListBox()
+        self.sys_config_list.set_selection_mode(Gtk.SelectionMode.SINGLE)
         self.sys_config_vbox.append(self.sys_config_list)
 
         for dev in self.fb_project.devices:
             if dev.resources:
                 dev_expander = Gtk.Expander(label=dev.name)
                 resources_list = Gtk.ListBox()
+                resources_list.set_show_separators(True)
+                resources_list.set_selection_mode(Gtk.SelectionMode.SINGLE)
+                resources_list.add_controller(gesture_click_sys_resource)
                 dev_expander.set_child(resources_list)
                 self.sys_config_list.append(dev_expander)
                 for res in dev.resources:
@@ -128,15 +148,9 @@ class SystemEditor(PageMixin, Gtk.Box):
                 
         # ----------------------------------------- #
         
-        gesture_click_applications = Gtk.GestureClick()
-        gesture_click_applications.set_button(1)  # Set to listen to left-click
-        gesture_click_applications.connect("pressed", self.on_gesture_click_applications)  # Connect event handler
-        self.applications_list.add_controller(gesture_click_applications)  # Add to the list box
         
-        gesture_click_sys_config = Gtk.GestureClick()
-        gesture_click_sys_config.set_button(1)  # Set to listen to left-click
-        gesture_click_sys_config.connect("pressed", self.on_gesture_click_sys_config)  # Connect event handler
-        self.sys_config_list.add_controller(gesture_click_sys_config)  # Add to the list box                
+        self.applications_list.add_controller(gesture_click_applications)  # Add to the list box
+        self.sys_config_list.add_controller(gesture_click_sys_device)  # Add to the list box                
                     
         # self.popover = Gtk.PopoverMenu()
         # self.popover.set_menu_model(self.open_menu)
@@ -167,7 +181,6 @@ class SystemEditor(PageMixin, Gtk.Box):
         label.set_width_chars(13)
         hbox.append(label)
         hbox.append(entry)
-        
             
     def on_gesture_click_applications(self, gesture, n_press, x, y):
         if n_press == 2:  # Check if it is a double-click
@@ -179,10 +192,12 @@ class SystemEditor(PageMixin, Gtk.Box):
                     print(application.name)
                     # editor = Fun
                 elif isinstance(app, Gtk.Label):
-                    application = self.fb_project.application_get(app.get_label())
-                    print(application.name)
+                    print("here")
+                    if not isinstance(app.get_parent(), Gtk.Expander):
+                        application = self.fb_project.application_get(app.get_label())
+                        print(application.name)
     
-    def on_gesture_click_sys_config(self, gesture, n_press, x, y):
+    def on_gesture_click_device(self, gesture, n_press, x, y):
         if n_press == 2:  # Check if it is a double-click
             target = gesture.get_widget().get_selected_row()
             if isinstance(target, Gtk.ListBoxRow):
@@ -194,7 +209,19 @@ class SystemEditor(PageMixin, Gtk.Box):
                 elif isinstance(dev, Gtk.Label):
                     device = self.fb_project.device_get(dev.get_label())
                     print(device.name)
-      
+    
+    def on_gesture_click_resource(self, gesture, n_press, x, y):
+        self.sys_config_list.unselect_all()
+        if n_press == 2:
+            target = gesture.get_widget().get_selected_row()
+            if isinstance(target, Gtk.ListBoxRow):
+                res = target.get_child()
+                while(not isinstance(target, Gtk.Expander)):
+                    target = target.get_parent()
+                dev = self.fb_project.device_get(target.get_label())
+                resource = dev.resource_get(res.get_label())
+                print(resource.name)
+
     def save(self, file_path_name=None):
         status = self.selected_fb.save(file_path_name)
         if status == True:

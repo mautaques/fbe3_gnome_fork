@@ -789,8 +789,7 @@ class ServiceTransaction():
     def __init__(self, input_primitive=None, output_primitive=None, *args, **kwargs):
         self.input_primitive = input_primitive #(event, interface, parameters)
         self.output_primitive = output_primitive #(event, interface, parameters)
-
-        
+     
 class Composite():
     def __init__(self):
         self.function_blocks = list()
@@ -901,10 +900,10 @@ class Device():
         return None
         
 class Application():
-    def __init__(self, name, comment='', subapp_network=None):
+    def __init__(self, name, comment=''):
         self.name = name
         self.comment = comment
-        self.subapp_network = subapp_network
+        self.subapp_network = Composite()
         
 class System():    
     def __init__(self, name='Untitled', comment=''):
