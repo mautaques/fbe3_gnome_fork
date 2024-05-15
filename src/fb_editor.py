@@ -49,15 +49,13 @@ class FunctionBlockEditor(PageMixin, Gtk.Box):
         self.build_treeview()
 
         self.fb_render.set_draw_func(self.on_draw, None)
-
+        
         self.gesture_press.connect("pressed", self.button_press)
         self.gesture_release.connect("released", self.button_release)
         self.event_controller.connect("motion", self.motion_notify)
         self.fb_render.add_controller(self.gesture_press)
         self.fb_render.add_controller(self.gesture_release)
         self.fb_render.add_controller(self.event_controller)
-        self.cursor_crosshair = Gdk.Cursor.new_from_name("crosshair")
-        self.fb_render.set_cursor(self.cursor_crosshair)
 
 
     def build_treeview(self):
@@ -185,6 +183,7 @@ class FunctionBlockEditor(PageMixin, Gtk.Box):
     def events_toggle_input(self, widget, path):
         event = self.events_liststore[path][3]
         event.is_input = not event.is_input
+        event.connection_remove_all_same_type()
         self.update_treeview()
         self.trigger_change()
 
@@ -206,12 +205,13 @@ class FunctionBlockEditor(PageMixin, Gtk.Box):
         var = self.vars_liststore[path][3]
         self.selected_fb.variable_rename(var, var_name)
         self.update_treeview()
-        self.fb_render.queue_draw()
         self.trigger_change()
 
     def variable_toggle_input(self, widget, path):
         variable = self.vars_liststore[path][3]
         variable.is_input = not variable.is_input
+        variable.is_output = not variable.is_output
+        variable.connection_remove_all_same_type()
         self.update_treeview()
         self.trigger_change()
 
@@ -315,7 +315,6 @@ class FunctionBlockEditor(PageMixin, Gtk.Box):
             self.fb_render.fb_diagram.add_function_block(new_fb)
             self.fb_count = self.fb_count + 1
             self.update_treeview()
-            self.fb_render.queue_draw()
             self.trigger_change()
             self.selected_fb = None
             

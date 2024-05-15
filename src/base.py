@@ -22,3 +22,4 @@ class PageMixin:
     def get_tab_name(self):
         return ''
         
+

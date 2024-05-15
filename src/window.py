@@ -20,13 +20,13 @@
 from gi.repository import Adw
 from gi.repository import Gtk
 from gi.repository import Gio
+from gi.repository import Gdk
 import sys
 import os
 cur_path = os.path.realpath(__file__)
 base_path = os.path.dirname(os.path.dirname(cur_path))
 sys.path.insert(1, base_path)
 from .fb_editor import FunctionBlockEditor
-from .system_editor import SystemEditor
 from .project_editor import ProjectEditor
 from .xmlParser import *
 
@@ -34,6 +34,8 @@ from .xmlParser import *
 class FbeWindow(Adw.ApplicationWindow):
     __gtype_name__ = 'FbeWindow'
 
+    labels_box = Gtk.Template.Child()
+    tool_frame = Gtk.Template.Child()
     notebook = Gtk.Template.Child()
     add_fb_btn = Gtk.Template.Child()
     connect_fb_btn = Gtk.Template.Child()
@@ -44,13 +46,24 @@ class FbeWindow(Adw.ApplicationWindow):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        print(cur_path)
+        # print(cur_path)
         new_file_action = Gio.SimpleAction(name="new-project")
         new_file_action.connect("activate", self.new_file_dialog)
         self.add_action(new_file_action)
         open_action = Gio.SimpleAction(name="open-project")
         open_action.connect("activate", self.open_file_sys_dialog)
         self.add_action(open_action)
+        
+        # ---------- Make tool frame's border square ---------- #  
+        css_provider = Gtk.CssProvider()
+        css_provider.load_from_data(b".squared {border-radius: 0;}")
+        Gtk.StyleContext.add_provider_for_display(
+            Gdk.Display.get_default(),
+            css_provider,
+            Gtk.STYLE_PROVIDER_PRIORITY_USER
+        )
+        self.tool_frame.get_style_context().add_class("squared")
+        # ---------------------------------------------------- #
 
         self.selected_tool = None
         self.notebook.connect('create-window', self.on_notebookbook_create_window)
@@ -62,15 +75,17 @@ class FbeWindow(Adw.ApplicationWindow):
         self.remove_fb_btn.connect('clicked', self.remove_function_block)
 
     def new_file_dialog(self, action, param=None):
-        app = Application('UntitledApp')
+        self.notebook.set_visible(True)
+        self.labels_box.set_visible(False)
         system = System(name='Untitled')
-        system.application_add(app)
+        system.application_create()
         window = self.get_ancestor(Gtk.Window)
         fb_project = ProjectEditor(window, system)
         self.add_tab_editor(fb_project, system.name, None)
 
     def open_file_dialog(self, action, parameter):
-        # Create a new file selection dialog, using the "open" mode
+        self.notebook.set_visible(True)
+        self.labels_box.set_visible(False)
         filters = Gio.ListStore.new(Gtk.FileFilter)
         filter_fbt = Gtk.FileFilter()
         filter_fbt.set_name("fbt Files")
@@ -81,7 +96,8 @@ class FbeWindow(Adw.ApplicationWindow):
         native.open(self, None, self.on_open_response)
         
     def open_file_sys_dialog(self, action, parameter):
-        # Create a new file selection dialog, using the "open" mode
+        self.notebook.set_visible(True)
+        self.labels_box.set_visible(False)
         filters = Gio.ListStore.new(Gtk.FileFilter)
         filter_fbt = Gtk.FileFilter()
         filter_fbt.set_name("sys Files")

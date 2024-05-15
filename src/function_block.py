@@ -14,15 +14,15 @@ class Event():
         self.name = name
         self.comment = comment
         self.fb = fb
-        self.variables = list() # For now this set is used for keeping the variable name connected to the event
-        self.transitions = list()  
+        self.x = x
+        self.y = y
+        self.active = active
         self.is_input = is_input
         self.is_selected = False
         self.selected_connection = False
-        self.active = active
+        self.variables = list() # For now this set is used for keeping the variable name connected to the event
+        self.transitions = list()  
         self.connections = list()
-        self.x = x
-        self.y = y
         super().__init__(*args, **kwargs)
         
     def activate(self, active=False):
@@ -36,6 +36,12 @@ class Event():
         
     def variable_remove(self, variable):
         self.variables.discard(variable)
+        
+    def connection_remove_all_same_type(self):
+        for con in self.connections:
+            if con.is_input == self.is_input:
+                self.connections.remove(con)
+                con.connections.remove(self)
 
 class Algorithm():
     def __init__(self, name='', algorithm_str=None, func=None, comment="", *args, **kwargs):
@@ -311,6 +317,11 @@ class Variable():
     def connection_add(self, connection):
         self.connections.append(connection)
 
+    def connection_remove_all_same_type(self):
+        for con in self.connections:
+            if con.is_input == self.is_input and con.is_output == self.is_output:
+                self.connections.remove(con)
+                con.connections.remove(self)
 
 class ExecutionControlChart():
     state_class = State
@@ -844,6 +855,7 @@ class Composite():
                     _in_event = out_event
                     _out_event = in_event
                 _out_event.connection_add(_in_event)
+                # _in_event.connection_add(_out_event)
 
     def connect_variables(self, in_var, out_var, is_basic=True):
         if type(in_var) is not Variable or type(out_var) is not Variable:
@@ -869,12 +881,31 @@ class Composite():
             if fb.y > max_y:
                 max_y = fb.y
         return max_x, max_y
+
+class Identification():
+    def __init__(self, standard='', classification='', app_domain='', function='', type='', description=''):
+        self.standard = standard
+        self.classification = classification
+        self.app_domain = app_domain
+        self.function = function
+        self.type = type
+        self.description = description
+
+class VersionInfo():
+    def __init__(self, version='', organization='', author='', date='', remarks=''):
+        self.version = version
+        self.organization = organization
+        self.author = author
+        self.date = date
+        self.remarks = remarks
     
 class Resource():
     def __init__(self, name, type, comment='', x=0.0, y=0.0, fb_network=None):
         self.name = name
         self.type = type
         self.comment = comment
+        self.version_info = VersionInfo()
+        self.identification = Identification()
         self.x = x
         self.y = y
         self.fb_network = fb_network
@@ -885,6 +916,8 @@ class Device():
         self.name = name
         self.type = type
         self.comment = comment
+        self.version_info = VersionInfo()
+        self.identification = Identification()
         self.x = x
         self.y = y
         self.resources = list()
@@ -903,15 +936,20 @@ class Application():
     def __init__(self, name, comment=''):
         self.name = name
         self.comment = comment
+        self.version_info = VersionInfo()
+        self.identification = Identification()
         self.subapp_network = Composite()
         
 class System():    
     def __init__(self, name='Untitled', comment=''):
         self.name = name
         self.comment = comment
+        self.version_info = VersionInfo()
+        self.identification = Identification()
         self.applications = list()
         self.devices = list()
         self.mapping = list()  # From FB to RES e.g mapping[CTD] = device.RES.CTD
+        self.unnamed_applications = 0
         
     def applications_name_str(self):
         app_names = ''
@@ -932,11 +970,35 @@ class System():
     def application_add(self, app):
         self.applications.append(app)
         
+    def application_create(self):
+        if(self.unnamed_applications == 0):
+            app = Application(self.name+'App')
+        else:
+            app = Application(self.name+'App'+str(self.unnamed_applications))
+        self.unnamed_applications += 1
+        self.application_add(app)
+        return app
+        
     def application_get(self, name):
         for app in self.applications:
             if app.name == name:
                 return app
         return None
+    
+    def application_name_exists(self, app_name):
+        return self.application_get(app_name) is not None
+    
+    def application_rename(self, app, new_name):
+        if app.name == new_name:
+            return False
+        if self.application_name_exists(new_name):
+            print("there's an app with same name")
+            return False
+        app.name = new_name
+        return True
+    
+    def application_remove(self, app):
+        self.applications.remove(app)
     
     def mapping_add(self, mapping):
         self.mapping.append(mapping)

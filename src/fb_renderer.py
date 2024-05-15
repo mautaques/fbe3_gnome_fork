@@ -18,7 +18,43 @@ class FunctionBlockRenderer(Gtk.DrawingArea):
         self.inspected_block = inspected_block
         self.selected_connection = None
         self.offset_x, self.offset_y = 0, 0
-        print(cairo.version_info)
+        
+    def draw_grid(self, cr):
+        allocation = self.get_allocation()
+        width = allocation.width
+        height = allocation.height
+
+        cr.set_source_rgba(1, 1, 1, 0.1)
+        cr.rectangle(0, 0, width, height)
+        cr.fill()
+
+        cr.set_source_rgba(0, 0, 0, 0.1)
+        grid_size = 20
+        dot_spacing = 2 
+        cr.set_dash([2.5, 2.5], 0) 
+        cr.set_line_width(1.0)
+        grid_size = 20
+        for i in range(0, width, grid_size):
+            cr.move_to(i, 0)
+            cr.line_to(i, height)
+            cr.stroke()
+
+        for j in range(0, height, grid_size):
+            cr.move_to(0, j)
+            cr.line_to(width, j)
+            cr.stroke()
+            
+        # for i in range(0, width, grid_size):
+        #     for j in range(0, height, dot_spacing*2):
+        #         cr.rectangle(i, j, dot_spacing, dot_spacing)
+        #         cr.fill()
+
+        # for j in range(0, height, grid_size):
+        #     for i in range(0, width, dot_spacing*2):
+        #         cr.rectangle(i, j, dot_spacing, dot_spacing)
+        #         cr.fill()
+        
+        cr.set_dash((), 0.0)
 
     def draw_function_block(self, cr, wid, fb, gain):
         if self.inspected_block is not None:
@@ -227,8 +263,6 @@ class FunctionBlockRenderer(Gtk.DrawingArea):
                                 cr.line_to(connection.x - con_offset, connection.y)
                                 cr.line_to(connection.x + 10, connection.y)
 
-
-
                     else:
                         if var.x > connection.x:
                             print("here1" + var.name)
@@ -256,6 +290,7 @@ class FunctionBlockRenderer(Gtk.DrawingArea):
                             cr.line_to((connection.fb.x - var.fb.x - h_length)/2 + var.fb.x + h_length, var.y) # Draws straight line/lines from one to another
                             cr.line_to((connection.fb.x- var.fb.x - h_length)/2 + var.fb.x + h_length, connection.y) # (it doesnt need to contour any fb)
                             cr.line_to(connection.fb.x, connection.y)
+                            
                     cr.stroke()
 
             for event in fb.events:
@@ -379,11 +414,14 @@ class FunctionBlockRenderer(Gtk.DrawingArea):
                                     cr.line_to((connection.fb.x - event.fb.x - h_length)/2 + event.fb.x + h_length, event.y)
                                     cr.line_to((connection.fb.x - event.fb.x - h_length)/2 + event.fb.x + h_length, connection.y)
                                     cr.line_to(connection.fb.x, connection.y)
+                                    
                     cr.stroke()
 
     def draw(self, area, cr, wid, h, data):
-        cr.set_source_rgb(1, 1, 1)
-        cr.paint()
+        print(cr.get_dash())
+        self.draw_grid(cr)
+        # cr.set_source_rgb(1, 1, 1)
+        # cr.paint()
         for fb in self.fb_diagram.function_blocks:
             self.draw_function_block(cr, wid, fb, gain=20)
         self.draw_connections(cr, wid, h, data, gain=20)

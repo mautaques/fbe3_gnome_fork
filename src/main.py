@@ -38,9 +38,11 @@ class FbeApplication(Adw.Application):
         super().__init__(application_id='com.lapas.Fbe',
                          flags=Gio.ApplicationFlags.DEFAULT_FLAGS)
         self.create_action('quit', lambda *_: self.quit(), ['<primary>q'])
-        self.create_action('about', self.on_about_action)
+        self.create_action('about', self.on_about_action, ['<Ctrl>m'])
         self.set_accels_for_action('win.new-project', ['<Ctrl>n'])
         self.set_accels_for_action('win.open-project', ['<Ctrl>o'])
+        self.set_accels_for_action('win.show-help-overlay', ['<Ctrl><Shift>question'])
+        self.set_accels_for_action('win.system-information', ['<Ctrl>g'])
         print(cur_path)
 
     def do_activate(self):

@@ -58,42 +58,28 @@ def convert_xml_basic_fb(xml):
         fb_diagram = Composite()    
         for read_1 in read.iter("FB"):
             fb,_ = convert_xml_basic_fb('Projects/fbe/src/models/fb_library/'+read_1.get("Type")+'.fbt')  # Blocks declared in FBNetwork must be inside src/models/diac_library
-            # print("Network FB = "+fb.name)
-            fb.change_pos(float(read_1.get("x"))/3, float(read_1.get("y"))/4)
+            fb.change_pos(float(read_1.get("x"))/4, float(read_1.get("y"))/4)
             fb.name = read_1.get("Name")
             fb.type = read_1.get("Type")
             fb_diagram.add_function_block(fb)
             fb_import_list.add(fb)
             for read_2 in read_1.iter("Parameter"):
                 var = fb.variable_get(read_2.get("Name"))
-                var.value = read_2.get("Value")
-        #for fb in fb_diagram.function_blocks:
-            # print("FBD: " + fb.name)    
-    
-    
-    
-    #print("Current FB = " + FB.name)   
+                var.value = read_2.get("Value") 
     
     for read in root.iter("DataConnections"):
         for con in read.iter("Connection"):
             fb_destination = fb_diagram.get_fb(con.get("Destination").split(".")[0])
             if fb_destination != None:
-                # print("Data FB Destination = " + fb_destination.name)
                 var_destination = fb_destination.variable_get(con.get("Destination").split(".")[1])
             else:
                 var_destination = FB.variable_get(con.get("Destination"))
                 
-            # print("Data Destination = " + var_destination.name) 
-                
             fb_source = fb_diagram.get_fb(con.get("Source").split(".")[0])
             if fb_source != None:
-                # print("Data FB Source = " + fb_source.name)
                 var_source = fb_source.variable_get(con.get("Source").split(".")[1])
             else:
-                var_source = FB.variable_get(con.get("Source"))
-                
-            # print("Data Source = " + var_source.name)  
-              
+                var_source = FB.variable_get(con.get("Source"))              
                            
             fb_diagram.connect_variables(var_source, var_destination, False)
             
@@ -101,24 +87,20 @@ def convert_xml_basic_fb(xml):
         for con in read.iter("Connection"):
             fb_destination = fb_diagram.get_fb(con.get("Destination").split(".")[0])
             if fb_destination != None:
-                # print("Event FB Destination = " + fb_destination.name)
                 event_destination = fb_destination.event_get(con.get("Destination").split(".")[1])
             else:
                 event_destination = FB.event_get(con.get("Destination"))
-                
-            # print("Event Destination = " + event_destination.name)       
-                
+                                
             fb_source = fb_diagram.get_fb(con.get("Source").split(".")[0])
             if fb_source != None:
-                # print("Event FB Source = " + fb_source.name)
                 event_source = fb_source.event_get(con.get("Source").split(".")[1])
             else:
-                event_source = FB.event_get(con.get("Source"))
-                
-            # print("Event Source = " + event_source.name)  
+                event_source = FB.event_get(con.get("Source"))            
             
-                
-            fb_diagram.connect_events(event_source, event_destination, False)                
+            if event_source.fb.fb_network is not None or event_destination.fb.fb_network is not None:
+                fb_diagram.connect_events(event_source, event_destination, False)                
+            else:
+                fb_diagram.connect_events(event_source, event_destination, True) 
             
     for read in root.iter("ECState"):
         name = read.get("Name")
@@ -350,6 +332,25 @@ def convert_xml_system(xml):
         system_name = read.get("Name")
         system_comment = read.get("Comment")
         SYSTEM = System(system_name, system_comment)
+        
+    for read in root.iter("Identification"):
+        standard = read.get("Standard")
+        classification = read.get("Classification")
+        app_domain = read.get("ApplicationDomain")
+        function = read.get("Function")
+        type = read.get("Type")
+        description = read.get("Description")
+        identification = Identification(standard, classification, app_domain, function, type, description)
+        SYSTEM.identification = identification
+    
+    for read in root.iter("VersionInfo"):
+        version = read.get("Version")
+        organization = read.get("Organization")
+        author = read.get("Author")
+        date = read.get("Date")
+        remarks = read.get("Remarks")
+        version_info = VersionInfo(version, organization, author, date, remarks)
+        SYSTEM.version_info = version_info
     
     for read in root.iter("Application"):
         application_name = read.get("Name")
@@ -359,12 +360,10 @@ def convert_xml_system(xml):
         for read_1 in read.iter("SubAppNetwork"):
             fb_diagram = Composite()
             for read_2 in read_1.iter("FB"):
-                fb_name = read_2.get("Name")
-                fb_type = read_2.get("Type")
-                fb_comment = read_2.get("Comment")
-                fb_x = float(read_2.get("x"))/3
-                fb_y = float(read_2.get("y"))/3
-                fb = FunctionBlock(fb_name, fb_comment, fb_type, fb_x, fb_y)
+                fb, _ = convert_xml_basic_fb('Projects/fbe/src/models/fb_library/'+read_2.get("Type")+'.fbt')  # Blocks declared in FBNetwork must be inside src/models/diac_library
+                fb.change_pos(float(read_2.get("x"))/4, float(read_2.get("y"))/4)
+                fb.name = read_2.get("Name")
+                fb.type = read_2.get("Type")
                 for read_3 in read_2.iter("Parameter"):
                     if fb.variable_get(read_3.get("Name")) is not None:
                         var = fb.variable_get(read_3.get("Name"))
@@ -378,12 +377,15 @@ def convert_xml_system(xml):
                         event_destination = fb_destination.event_get(con.get("Destination").split(".")[1])     
                         
                     fb_source = fb_diagram.get_fb(con.get("Source").split(".")[0])
-                    
+                                        
                     if fb_source != None:
                         event_source = fb_source.event_get(con.get("Source").split(".")[1])                        
                         
-                    if fb_source is not None and fb_destination is not None:
+                    if fb_source is not None and fb_destination is not None and (fb_source.fb_network is not None or fb_destination.fb_network is not None):
                         fb_diagram.connect_events(event_source, event_destination, False)
+                    elif fb_source is not None and fb_destination is not None:
+                        fb_diagram.connect_events(event_source, event_destination, True)
+                        
             
             for read_2 in read_1.iter("DataConnections"):
                 for con in read_2.iter("Connection"):
@@ -395,8 +397,10 @@ def convert_xml_system(xml):
                     if fb_source != None:
                         var_source = fb_source.variable_get(con.get("Source").split(".")[1])                                            
                                 
-                    if fb_source is not None and fb_destination is not None:
+                    if fb_source is not None and fb_destination is not None and (fb_source.fb_network is not None or fb_destination.fb_network is not None):
                         fb_diagram.connect_variables(var_source, var_destination, False)
+                    elif fb_source is not None and fb_destination is not None:
+                        fb_diagram.connect_variables(var_source, var_destination, True)
             
             app.subapp_network = fb_diagram 
             
@@ -422,9 +426,8 @@ def convert_xml_system(xml):
                 fb_diagram = Composite()
                 for read_3 in read_2.iter("FB"):
                     print(resource_name)
-                    fb,_ = convert_xml_basic_fb('Projects/fbe/src/models/fb_library/'+read_3.get("Type")+'.fbt')  # Blocks declared in FBNetwork must be inside src/models/diac_library
-                    # print("Network FB = "+fb.name)
-                    fb.change_pos(float(read_3.get("x"))/3, float(read_3.get("y"))/4)
+                    fb, _ = convert_xml_basic_fb('Projects/fbe/src/models/fb_library/'+read_3.get("Type")+'.fbt')  # Blocks declared in FBNetwork must be inside src/models/diac_library
+                    fb.change_pos(float(read_3.get("x"))/4, float(read_3.get("y"))/4)
                     fb.name = read_3.get("Name")
                     fb.type = read_3.get("Type")
                     fb_diagram.add_function_block(fb)

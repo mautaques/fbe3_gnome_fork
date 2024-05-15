@@ -12,26 +12,28 @@ class ProjectEditor(PageMixin, Gtk.Box):
     __gtype_name__ = 'ProjectEditor'
     
     project_menu_button = Gtk.Template.Child()
-    system_config_menu = Gtk.Template.Child()
     primary_menu = Gtk.Template.Child()
+    sys_config_submenu = Gtk.Template.Child()
+    apps_submenu = Gtk.Template.Child()
     
     def __init__(self, window, system=None, current_editor=None, current_tool=None, system_editor=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
-        print(type(current_editor))
         self.window = window
         self.system = system
         self.current_editor = current_editor  # Either a system editor or application editor
         self.current_tool = current_tool
-        self.system_editor = SystemEditor(window, system)
+        self.current_editor_label = Gtk.Label()
+        self.system_editor = SystemEditor(window, self, system)
         self.applications_editors = list()
         
         if current_editor is None:
             self.current_editor = self.system_editor  # Always open in system editor 
+            self.current_editor_label.set_label('System Information')
         
         self.open_menu = Gio.Menu.new()
         self.project_bar = Gtk.ActionBar(valign=Gtk.Align.START)
-        self.vpaned = Gtk.Paned(wide_handle=True, orientation = Gtk.Orientation.VERTICAL)
+        self.vpaned = Gtk.Paned(wide_handle=False, orientation = Gtk.Orientation.VERTICAL)
         self.vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         
         self.vbox.set_vexpand(True)
@@ -43,22 +45,140 @@ class ProjectEditor(PageMixin, Gtk.Box):
         self.vbox.set_hexpand(True)
         self.append(self.vbox)
         
-        self.project_menu_button.set_label(self.system.name)
+        self.project_menu_button.set_label('THIS PROJECT')
         
-        for app in self.system.applications:
-            label = app.name
-            label_action = label+"-app"
-            self._create_action(label_action, self.on_application_editor, app)
-            self.primary_menu.append(label, "win."+label_action)
+        self._create_action("system-information", self.on_system_information)
+                
+        self.build_application_menu()
+        self.build_system_config_menu()
+            
+        self.project_bar.pack_start(self.project_menu_button)
+        self.project_bar.pack_start(self.current_editor_label)
+          
+
+    def _create_action(self, action_name, callback, *args):
+        action = Gio.SimpleAction.new(action_name, None)
+        if not args:
+            action.connect("activate", callback)
+            self.window.add_action(action)
+        else:
+            action.connect("activate", callback, args)
+            self.window.add_action(action)
+    
+    def _action_append_menu(self, menu, elem, suffix, callback):
+        label = elem.name
+        action_label = label+suffix
+        self._create_action(action_label, callback, elem)
+        menu.append(label, "win."+action_label)
         
+    def build_system_config_menu(self):
+        for dev in self.system.devices:
+            self._action_append_menu(self.sys_config_submenu, dev, '-dev', self.on_application_editor)
+            # label = dev.name
+            # label_action = label+"-dev"
+            # self._create_action(label_action, self.on_application_editor)
+            # self.sys_config_submenu.append(label, "win."+label_action)
+    
+    def update_system_config_menu(self):
+        self.sys_config_submenu.remove_all()
         for dev in self.system.devices:
             label = dev.name
             label_action = label+"-dev"
-            self._create_action(label_action, self.on_application_editor)
-            self.system_config_menu.append(label, "win."+label_action)
+            self.sys_config_submenu.append(label, "win."+label_action)
             
-        self.project_bar.pack_start(self.project_menu_button)
-          
+    def build_application_menu(self):       
+        for app in self.system.applications:
+            self.applications_editors.append(FunctionBlockEditor(app))
+            self._action_append_menu(self.apps_submenu, app, '-app', self.on_application_editor)
+            # label = app.name
+            # label_action = label+"-app"
+            # self._create_action(label_action, self.on_application_editor, app)
+            # self.apps_submenu.append(label, "win."+label_action) 
+    
+    def update_application_menu(self):
+        self.applications_editors.clear()
+        self.apps_submenu.remove_all()
+        for app in self.system.applications:
+            self.applications_editors.append(FunctionBlockEditor(app))
+            label = app.name
+            label_action = label+"-app"
+            self.apps_submenu.append(label, "win."+label_action)
+            
+    def on_system_information(self, action, param=None):
+        self.current_editor_label.set_label('System Information')
+        self.current_editor = self.system_editor
+        self.vpaned.set_end_child(self.current_editor)
+
+    def on_application_editor(self, action, param=None, app=None):
+        if isinstance(app, tuple):
+            app_editor = self.application_editor_get(app[0])
+        else:
+            app_editor = self.application_editor_get(app)
+        self.current_editor_label.set_label(app_editor.app.name)
+        self.current_editor = app_editor
+        self.vpaned.set_end_child(self.current_editor)
+    
+    def application_editor_get(self, app):
+        for editor in self.applications_editors:
+            if editor.app.name == app.name:
+                return editor
+        return None
+
+    def save_file_dialog(self, action, _):
+        self._native = Gtk.FileChooserNative(
+            title="Save File As",
+            transient_for=self,
+            action=Gtk.FileChooserAction.SAVE,
+            accept_label="_Save",
+            cancel_label="_Cancel",
+        )
+        self._native.connect("response", self.on_save_response)
+        self._native.show()
+
+    def on_save_response(self, native, response):
+        if response == Gtk.ResponseType.ACCEPT:
+            self.save_file(native.get_file())
+        self._native = None
+
+    def save_file(self, file):
+        buffer = self.main_text_view.get_buffer()
+
+        # Retrieve the iterator at the start of the buffer
+        start = buffer.get_start_iter()
+        # Retrieve the iterator at the end of the buffer
+        end = buffer.get_end_iter()
+        # Retrieve all the visible text between the two bounds
+        text = buffer.get_text(start, end, False)
+
+        # If there is nothing to save, return early
+        if not text:
+            return
+
+        bytes = GLib.Bytes.new(text.encode('utf-8'))
+
+        # Start the asynchronous operation to save the data into the file
+        file.replace_contents_bytes_async(bytes,
+                                          None,
+                                          False,
+                                          Gio.FileCreateFlags.NONE,
+                                          None,
+                                          self.save_file_complete)
+
+    def save_file_complete(self, file, result):
+        res = file.replace_contents_finish(result)
+        info = file.query_info("standard::display-name",
+                               Gio.FileQueryInfoFlags.NONE)
+        if info:
+            display_name = info.get_attribute_string("standard::display-name")
+        else:
+            display_name = file.get_basename()
+
+        if not res:
+            msg = f"Unable to save as “{display_name}”"
+        else:
+            msg = f"Saves as “{display_name}”"
+        self.toast_overlay.add_toast(Adw.Toast(title=msg))
+
     def save(self, file_path_name=None):
         status = self.selected_fb.save(file_path_name)
         if status == True:
@@ -72,20 +192,4 @@ class ProjectEditor(PageMixin, Gtk.Box):
         if self.selected_fb is not None:
             return self.selected_fb.get_name()
         return self
-
-    def _create_action(self, action_name, callback, *args):
-        action = Gio.SimpleAction.new(action_name, None)
-        if not args:
-            action.connect("activate", callback)
-            self.window.add_action(action)
-        else:
-            action.connect("activate", callback, args)
-            self.window.add_action(action)
-
-    def on_application_editor(self, action, param=None, app=None):
-        app_editor = FunctionBlockEditor(app[0])
-        self.current_editor = app_editor
-        self.vpaned.set_end_child(self.current_editor)
-
-    def on_system_config(self):
-        print('config')
+    

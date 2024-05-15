@@ -20,6 +20,34 @@ class EccRenderer(Gtk.DrawingArea):
         self.state_dimensions = dict()  # state_dimensions[state] = (radius, width, height) -> Dimension refers to the state name dimension
         self.offset_x, self.offset_y = 0, 0
               
+    def draw_grid(self, cr):
+        allocation = self.get_allocation()
+        width = allocation.width
+        height = allocation.height
+
+        cr.set_source_rgba(1, 1, 1, 0.1)
+        cr.rectangle(0, 0, width, height)
+        cr.fill()
+
+        cr.set_source_rgba(0, 0, 0, 0.1)
+        grid_size = 20
+        dot_spacing = 2 
+        cr.set_dash([2.5, 2.5], 0) 
+        cr.set_line_width(1.0)
+        grid_size = 20
+        for i in range(0, width, grid_size):
+            cr.move_to(i, 0)
+            cr.line_to(i, height)
+            cr.stroke()
+
+        for j in range(0, height, grid_size):
+            cr.move_to(0, j)
+            cr.line_to(width, j)
+            cr.stroke()
+        
+        cr.set_dash((), 0.0)
+        cr.set_line_width(2.0)
+    
     def reset_dimensions_dict(self):        
         self.state_dimensions = dict()      
     
@@ -283,8 +311,9 @@ class EccRenderer(Gtk.DrawingArea):
 
 
     def draw(self, area, cr, wid, h, data):
-        cr.set_source_rgb(1, 1, 1)  
-        cr.paint()
+        self.draw_grid(cr)
+        # cr.set_source_rgb(1, 1, 1)  
+        # cr.paint()
         for state in self.ecc.states:
             if state.is_initial:
                 x, y = self.draw_state(cr, wid, state, rec_color=(20/255, 80/255, 250/255))
