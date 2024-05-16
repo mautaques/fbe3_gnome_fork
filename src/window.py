@@ -34,6 +34,7 @@ from .xmlParser import *
 class FbeWindow(Adw.ApplicationWindow):
     __gtype_name__ = 'FbeWindow'
 
+    vbox_window = Gtk.Template.Child()
     labels_box = Gtk.Template.Child()
     tool_frame = Gtk.Template.Child()
     notebook = Gtk.Template.Child()
@@ -53,6 +54,9 @@ class FbeWindow(Adw.ApplicationWindow):
         open_action = Gio.SimpleAction(name="open-project")
         open_action.connect("activate", self.open_file_sys_dialog)
         self.add_action(open_action)
+        add_type_action = Gio.SimpleAction(name="add-type")
+        add_type_action.connect("activate", self.add_fb_dialog)
+        self.add_action(add_type_action)
         
         # ---------- Make tool frame's border square ---------- #  
         css_provider = Gtk.CssProvider()
@@ -84,8 +88,6 @@ class FbeWindow(Adw.ApplicationWindow):
         self.add_tab_editor(fb_project, system.name, None)
 
     def open_file_dialog(self, action, parameter):
-        self.notebook.set_visible(True)
-        self.labels_box.set_visible(False)
         filters = Gio.ListStore.new(Gtk.FileFilter)
         filter_fbt = Gtk.FileFilter()
         filter_fbt.set_name("fbt Files")
@@ -96,8 +98,6 @@ class FbeWindow(Adw.ApplicationWindow):
         native.open(self, None, self.on_open_response)
         
     def open_file_sys_dialog(self, action, parameter):
-        self.notebook.set_visible(True)
-        self.labels_box.set_visible(False)
         filters = Gio.ListStore.new(Gtk.FileFilter)
         filter_fbt = Gtk.FileFilter()
         filter_fbt.set_name("sys Files")
@@ -113,6 +113,8 @@ class FbeWindow(Adw.ApplicationWindow):
         print(file_name)
         # If the user selected a file...
         if file is not None:
+            self.notebook.set_visible(True)
+            self.labels_box.set_visible(False)
             window = self.get_ancestor(Gtk.Window)
             system = convert_xml_system(file_name)
             fb_project = ProjectEditor(window, system)
@@ -148,7 +150,7 @@ class FbeWindow(Adw.ApplicationWindow):
             print(f"Unable to load the contents of {path}: the file is not encoded with UTF-8")
             return
 
-    def add_fb_dialog(self, action):
+    def add_fb_dialog(self, action, param=None):
         # Create a new file selection dialog, using the "open" mode
         filters = Gio.ListStore.new(Gtk.FileFilter)
         filter_fbt = Gtk.FileFilter()
@@ -164,11 +166,19 @@ class FbeWindow(Adw.ApplicationWindow):
         file = dialog.open_finish(result)
         file_name = file.get_path()
         print(file_name)
+        toast = Adw.ToastOverlay()
+        toast.set_parent(self.vbox_window)
+        self.vbox_window.append(toast)
         # If the user selected a file...
         if file is not None:
             fb_choosen,_  = convert_xml_basic_fb(file_name)
-            fb_editor = self.get_current_tab_widget()
-            fb_editor.selected_fb = fb_choosen
+            if isinstance(self.get_current_tab_widget().current_editor, FunctionBlockEditor):
+                fb_editor = self.get_current_tab_widget().current_editor
+                fb_editor.selected_fb = fb_choosen
+            else:
+                print('not fb editor')
+                toast.add_toast(Adw.Toast(title="Must be inside application editor to add type", timeout=3))
+                self.selected_tool = None
 
     def remove_function_block(self, widget):
         self.selected_tool = 'remove'

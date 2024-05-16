@@ -23,15 +23,16 @@ class EccEditor(PageMixin, Gtk.Box):
         self.selected_transition = None
         self.enable_add = True
 
-        self.paned = Gtk.Paned(wide_handle=True, orientation=Gtk.Orientation.VERTICAL)
+        self.paned = Gtk.Paned(wide_handle=False, orientation=Gtk.Orientation.VERTICAL, halign=Gtk.Align.FILL)
         self.paned_side = Gtk.Paned(wide_handle=True, orientation=Gtk.Orientation.HORIZONTAL)
         self.scrolled = Gtk.ScrolledWindow.new()
         self.ecc_render = EccRenderer(self.fb)
-        self.box_bottom = Gtk.Box(orientation = Gtk.Orientation.HORIZONTAL, halign=Gtk.Align.FILL)
+        self.box_bottom = Gtk.Box(orientation = Gtk.Orientation.HORIZONTAL, halign=Gtk.Align.FILL, valign=Gtk.Align.FILL)
         self.box_side = Gtk.Box(orientation = Gtk.Orientation.VERTICAL, halign=Gtk.Align.FILL)
         self.gesture_press = Gtk.GestureClick.new()
         self.gesture_release = Gtk.GestureClick.new()
         self.event_controller = Gtk.EventControllerMotion.new()
+        self.box_bottom.set_homogeneous(True)
         
         self.paned_side.set_vexpand(True)
         self.paned_side.set_hexpand(True)
@@ -40,7 +41,7 @@ class EccEditor(PageMixin, Gtk.Box):
         self.paned_side.set_shrink_start_child(False)
         self.paned_side.set_end_child(self.box_side)
         self.paned_side.set_resize_end_child(False)
-        self.paned_side.set_shrink_end_child(False)
+        self.paned_side.set_shrink_end_child(True)
         self.append(self.paned)
         self.append(self.paned_side)
         self.paned.set_vexpand(True)

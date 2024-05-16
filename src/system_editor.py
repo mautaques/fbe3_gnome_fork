@@ -65,6 +65,12 @@ class SystemEditor(PageMixin, Gtk.Box):
         self.apps_expander.set_child(self.apps_vbox)
         self.apps_expander.set_expanded(True)
         
+        self.apps_scrolled = Gtk.ScrolledWindow()
+        self.apps_scrolled.set_child(self.apps_expander)
+        
+        self.sys_config_scrolled = Gtk.ScrolledWindow()
+        self.sys_config_scrolled.set_child(self.sys_config_expander)
+        
         self.sys_iden_frame = Gtk.Frame(margin_start=5, margin_top=5, margin_end=5, margin_bottom=5, halign=Gtk.Align.FILL)
         self.sys_iden_frame.set_child(self.sys_iden_expander)
         self.sys_iden_frame.get_style_context().add_class("squared")
@@ -74,11 +80,11 @@ class SystemEditor(PageMixin, Gtk.Box):
         self.sys_version_frame.get_style_context().add_class("squared")
         
         self.sys_config_frame = Gtk.Frame(margin_start=5, margin_top=5, margin_end=5, margin_bottom=5)
-        self.sys_config_frame.set_child(self.sys_config_expander)
+        self.sys_config_frame.set_child(self.sys_config_scrolled)
         self.sys_config_frame.get_style_context().add_class("squared")
         
         self.apps_frame = Gtk.Frame(margin_start=5, margin_top=5, margin_end=5, margin_bottom=5)
-        self.apps_frame.set_child(self.apps_expander)
+        self.apps_frame.set_child(self.apps_scrolled)
         self.apps_frame.get_style_context().add_class("squared")
         
         self.info_vbox_left.append(self.sys_iden_frame)
@@ -124,14 +130,14 @@ class SystemEditor(PageMixin, Gtk.Box):
 
         for app in self.system.applications:
             if app.subapp_network.function_blocks:
-                app_expander = Gtk.Expander(label=app.name)
+                app_expander = Gtk.Expander(label=app.name, margin_start=4)
                 fb_listbox = Gtk.ListBox()
                 fb_listbox.set_show_separators(True)
                 fb_listbox.set_selection_mode(Gtk.SelectionMode.NONE)
                 app_expander.set_child(fb_listbox)
                 self.apps_listbox.append(app_expander)
                 for fb in app.subapp_network.function_blocks:
-                    self.add_row(fb_listbox, fb.name)
+                    self.add_row(fb_listbox, fb.name, 10)
             else:
                 self.add_row(self.apps_listbox, app.name)
                 
@@ -159,11 +165,11 @@ class SystemEditor(PageMixin, Gtk.Box):
                 
         # ----------------------------------------- #
         
-        self._create_action('create-app', self.on_create_application)
+        self._create_action('new-app', self.on_new_app)
         self._create_action('rename-app', self.on_rename_app)
         self._create_action('delete-app', self.on_delete_app)
         self.menu = Gio.Menu()
-        self.menu.append('Create', 'win.create-app')
+        self.menu.append('Create', 'win.new-app')
         self.menu.append('Rename', 'win.rename-app')
         self.menu.append('Delete', 'win.delete-app')
         self.popover = Gtk.PopoverMenu().new_from_model(self.menu)
@@ -184,35 +190,55 @@ class SystemEditor(PageMixin, Gtk.Box):
         self.sys_config_listbox.add_controller(gesture_click_sys_device)  # Add to the list box                
     
     def app_rename_dialog(self, label):
-        
         dialog = Gtk.Dialog(title="Rename app", transient_for=self.window, halign=Gtk.Align.FILL, valign=Gtk.Align.FILL)
         dialog.set_default_size(120, 80)
         dialog.set_resizable(False)
         dialog.add_button("_CANCEL", Gtk.ResponseType.CANCEL)
         dialog.add_button("_OK", Gtk.ResponseType.OK)
-
+        
         content_area = dialog.get_content_area()
+        toast = Adw.ToastOverlay()
+        toast.set_parent(self.project.vbox)
         app = self.system.application_get(label)
         buffer = Gtk.EntryBuffer(text=label)
         entry = Gtk.Entry(buffer=buffer, halign=Gtk.Align.CENTER, valign=Gtk.Align.CENTER)
+        content_area.append(entry)
+        #toast.set_child(entry)
+        self.project.vbox.append(toast)
 
+        # content_area = dialog.get_content_area()
+        # toast = Adw.ToastOverlay()
+        # toast.set_parent(content_area)
+        # app = self.system.application_get(label)
+        # buffer = Gtk.EntryBuffer(text=label)
+        # entry = Gtk.Entry(buffer=buffer, halign=Gtk.Align.CENTER, valign=Gtk.Align.CENTER)
+        # toast.set_child(entry)
+        # content_area.append(toast)
+        
         def destroy_dialog(parent, widget, app):
             buffer = None
             if(widget == -5):
                 new_name = entry.get_buffer().get_text()
                 if self.system.application_rename(app, new_name): 
-                    label = self.rgt_click_row.get_child()
-                    label.set_label(new_name)
+                    if self.rgt_click_row is not None:
+                        label = self.rgt_click_row.get_child()
+                        label.set_label(new_name)
+                    else:
+                        label = self.apps_listbox.get_selected_row().get_child()
+                        label.set_label(new_name)
                     self.project._action_append_menu(self.project.apps_submenu, app, '-app', self.project.on_application_editor)
                     self.project.update_application_menu()
+                    self.rgt_click_app = None
+                    self.rgt_click_row = None 
+                    toast.add_toast(Adw.Toast(title="Application renamed", timeout=3))
+                    dialog.destroy()
                 else:
-                    pass
-                    #TODO add toast overlay to notify name already exists
-            dialog.destroy()
+                    toast.add_toast(Adw.Toast(title="There's an app with the same name already!", timeout=3))
+            else:
+                dialog.destroy()
             
         dialog.connect("response", destroy_dialog, app)
 
-        content_area.append(entry)
         dialog.show()
 
     def _create_action(self, action_name, callback, *args):
@@ -281,36 +307,65 @@ class SystemEditor(PageMixin, Gtk.Box):
                 resource = dev.resource_get(res.get_label())
                 print(resource.name)
     
-    def on_create_application(self, action, param=None):
-        if self.rgt_click_app is None:
-            if not self.system.applications:
-                self.apps_frame.remove_controller(self.click_on_app)
-                self.apps_expander.add_controller(self.click_on_app)
-            app = self.system.application_create()
-            row = self.add_row(self.apps_listbox, app.name)
-            self.project._action_append_menu(self.project.apps_submenu, app, '-app', self.project.application_editor_get)
-            self.project.update_application_menu()
+    def on_new_app(self, action, param=None):
+        toast = Adw.ToastOverlay()
+        toast.set_parent(self.project.vbox)
+        self.project.vbox.append(toast)
+        toast.add_toast(Adw.Toast(title="Application created", timeout=1.5))
+        if not self.system.applications:
+            self.apps_frame.remove_controller(self.click_on_app)
+            self.apps_expander.add_controller(self.click_on_app)
+        app = self.system.application_create()
+        row = self.add_row(self.apps_listbox, app.name)
+        self.project._action_append_menu(self.project.apps_submenu, app, '-app', self.project.application_editor_get)
+        self.project.update_application_menu()
+        self.apps_listbox.unselect_all()
     
     def on_rename_app(self, action, param=None, app=None):
-        if self.rgt_click_app is not None:
-            self.app_rename_dialog(self.rgt_click_app.name)           
+        selected_row = self.apps_listbox.get_selected_row()
+        if selected_row:
+            label = selected_row.get_child()
+            app = self.system.application_get(label.get_label())
+            self.app_rename_dialog(app.name)
+        elif self.rgt_click_app is not None:
+            self.app_rename_dialog(self.rgt_click_app.name)
+      
             
     def on_delete_app(self, action, param=None, app=None):
-        if self.rgt_click_app is not None:
+        toast = Adw.ToastOverlay()
+        toast.set_parent(self.project.vbox)
+        self.project.vbox.append(toast)
+        selected_row = self.apps_listbox.get_selected_row()
+        if selected_row:
+            label = selected_row.get_child()
+            app = self.system.application_get(label.get_label())
+            self.rgt_click_app = None
+            self.system.application_remove(app)
+            self.project.update_application_menu()
+            self.apps_listbox.unselect_all()
+            self.apps_listbox.remove(selected_row)
+            if not self.system.applications:
+                self.apps_expander.remove_controller(self.click_on_app)
+                self.apps_frame.add_controller(self.click_on_app)
+            self.rgt_click_row = None
+            toast.add_toast(Adw.Toast(title="Application deleted", timeout=1.5))
+            
+        elif self.rgt_click_app is not None:
             app = self.rgt_click_app
             self.rgt_click_app = None
             self.system.application_remove(app)
             self.project.update_application_menu()
+            self.apps_listbox.unselect_all()
             self.apps_listbox.remove(self.rgt_click_row)
             if not self.system.applications:
                 self.apps_expander.remove_controller(self.click_on_app)
                 self.apps_frame.add_controller(self.click_on_app)
             self.rgt_click_row = None
-            
+            toast.add_toast(Adw.Toast(title="Application deleted", timeout=1.5))
     
-    def add_row(self, listbox, label):
+    def add_row(self, listbox, label, margin=0):
         row = Gtk.ListBoxRow()
-        label = Gtk.Label(label=label, halign=Gtk.Align.START, margin_start=20)
+        label = Gtk.Label(label=label, halign=Gtk.Align.START, margin_start=20+margin)
         row.set_child(label)
         listbox.append(row)
         return row

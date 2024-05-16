@@ -5,6 +5,7 @@ from gi.repository import Gdk
 from gi.repository import GLib
 from .base import PageMixin
 from .system_editor import SystemEditor
+from .system_config_editor import SystemConfigEditor
 from .fb_editor import FunctionBlockEditor
 
 @Gtk.Template(resource_path='/com/lapas/Fbe/menu.ui')
@@ -21,10 +22,12 @@ class ProjectEditor(PageMixin, Gtk.Box):
         
         self.window = window
         self.system = system
+        self.editor_index = 0
         self.current_editor = current_editor  # Either a system editor or application editor
         self.current_tool = current_tool
         self.current_editor_label = Gtk.Label()
         self.system_editor = SystemEditor(window, self, system)
+        self.system_configuration_editor = SystemConfigEditor(system, current_tool)
         self.applications_editors = list()
         
         if current_editor is None:
@@ -48,7 +51,11 @@ class ProjectEditor(PageMixin, Gtk.Box):
         self.project_menu_button.set_label('THIS PROJECT')
         
         self._create_action("system-information", self.on_system_information)
-                
+        self._create_action("system-configuration", self.on_system_configuration)
+        self._create_action("apps-swipe-left", self.on_apps_swipe_left)
+        self._create_action("apps-swipe-right", self.on_apps_swipe_right)
+        
+        
         self.build_application_menu()
         self.build_system_config_menu()
             
@@ -88,7 +95,7 @@ class ProjectEditor(PageMixin, Gtk.Box):
             
     def build_application_menu(self):       
         for app in self.system.applications:
-            self.applications_editors.append(FunctionBlockEditor(app))
+            self.applications_editors.append(FunctionBlockEditor(app, project=self))
             self._action_append_menu(self.apps_submenu, app, '-app', self.on_application_editor)
             # label = app.name
             # label_action = label+"-app"
@@ -99,7 +106,7 @@ class ProjectEditor(PageMixin, Gtk.Box):
         self.applications_editors.clear()
         self.apps_submenu.remove_all()
         for app in self.system.applications:
-            self.applications_editors.append(FunctionBlockEditor(app))
+            self.applications_editors.append(FunctionBlockEditor(app, project=self))
             label = app.name
             label_action = label+"-app"
             self.apps_submenu.append(label, "win."+label_action)
@@ -107,6 +114,28 @@ class ProjectEditor(PageMixin, Gtk.Box):
     def on_system_information(self, action, param=None):
         self.current_editor_label.set_label('System Information')
         self.current_editor = self.system_editor
+        self.vpaned.set_end_child(self.current_editor)
+        
+    def on_system_configuration(self, action, param=None):
+        self.current_editor_label.set_label('System Configuration')
+        self.current_editor = self.system_configuration_editor
+        self.vpaned.set_end_child(self.current_editor)
+    
+    def on_apps_swipe_left(self, action, param=None):
+        if self.editor_index == 0:
+            self.editor_index = len(self.applications_editors)-1
+        else:
+            self.editor_index -= 1
+        self.current_editor_label.set_label(self.applications_editors[self.editor_index].app.name)
+        self.current_editor = self.applications_editors[self.editor_index]
+        self.vpaned.set_end_child(self.current_editor)
+            
+    def on_apps_swipe_right(self, action, param=None):
+        self.editor_index += 1
+        if self.editor_index == len(self.applications_editors):
+            self.editor_index = 0
+        self.current_editor_label.set_label(self.applications_editors[self.editor_index].app.name)
+        self.current_editor = self.applications_editors[self.editor_index]
         self.vpaned.set_end_child(self.current_editor)
 
     def on_application_editor(self, action, param=None, app=None):

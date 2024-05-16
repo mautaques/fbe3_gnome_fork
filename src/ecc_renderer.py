@@ -6,13 +6,11 @@ import cairo
 gi.require_version('Gtk', '4.0')
 
 class EccRenderer(Gtk.DrawingArea):
-    HEIGHT_GAP = 4
     TEXT_GAP = 8
     ACTION_TEXT_GAP = 2
     ACTION_SPACE_GAP = 1
     ARROW_LENGTH = 7
     ARROW_MID_HEIGHT = 2.5
-    STATE_HEIGHT = 25
     def __init__(self, fb, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fb = fb

@@ -8,11 +8,12 @@ from .ecc_editor import EccEditor
 
 
 class FunctionBlockEditor(PageMixin, Gtk.Box):
-    def __init__(self, app=None, fb_diagram=None, selected_fb=None, current_tool=None, inspected_block=None, *args, **kwargs):
+    def __init__(self, app=None, fb_diagram=None, project=None, selected_fb=None, current_tool=None, inspected_block=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.app = app
         self.fb_diagram = fb_diagram
+        self.project = project
         self.selected_fb = selected_fb
         self.selected_event = None
         self.selected_variable = None
@@ -355,7 +356,10 @@ class FunctionBlockEditor(PageMixin, Gtk.Box):
                 window.add_tab(fb_editor, 'Inspecting: ' + fb.name)
             elif fb.is_basic():
                 ecc_editor = EccEditor(fb, self.current_tool)
-                window.add_tab(ecc_editor, 'ECC: ' + fb.name)
+                self.project.current_editor = ecc_editor
+                self.project.vpaned.set_end_child(ecc_editor)
+                self.project.current_editor_label.set_label('ECC: ' + fb.name)
+                # window.add_tab(ecc_editor, 'ECC: ' + fb.name)
             self.update_treeview()
             self.fb_render.queue_draw()
             self.trigger_change()
