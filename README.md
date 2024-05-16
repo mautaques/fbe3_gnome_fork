@@ -1,3 +1,3 @@
-# fbe
+# Function Block Editor
 
-A description of this project.
+An application for modelling function blocks based on IEC 61499.
