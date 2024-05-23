@@ -317,7 +317,7 @@ class SystemEditor(PageMixin, Gtk.Box):
             self.apps_expander.add_controller(self.click_on_app)
         app = self.system.application_create()
         row = self.add_row(self.apps_listbox, app.name)
-        self.project._action_append_menu(self.project.apps_submenu, app, '-app', self.project.application_editor_get)
+        self.project._action_append_menu(self.project.apps_submenu, app, '-app', self.project.on_application_editor)
         self.project.update_application_menu()
         self.apps_listbox.unselect_all()
     
