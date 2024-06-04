@@ -84,7 +84,7 @@ class FbeWindow(Adw.ApplicationWindow):
         system = System(name='Untitled')
         system.application_create()
         window = self.get_ancestor(Gtk.Window)
-        fb_project = ProjectEditor(window, system)
+        fb_project = ProjectEditor(window, system, current_tool=self.selected_tool)
         self.add_tab_editor(fb_project, system.name, None)
 
     def open_file_dialog(self, action, parameter):
@@ -117,7 +117,7 @@ class FbeWindow(Adw.ApplicationWindow):
             self.labels_box.set_visible(False)
             window = self.get_ancestor(Gtk.Window)
             system = convert_xml_system(file_name)
-            fb_project = ProjectEditor(window, system)
+            fb_project = ProjectEditor(window, system, current_tool=self.selected_tool)
             self.add_tab_editor(fb_project, system.name, None)
     
     def on_open_response(self, dialog, result):

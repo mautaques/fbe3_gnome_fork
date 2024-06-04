@@ -505,14 +505,10 @@ class EccEditor(PageMixin, Gtk.Box):
         tool = window.get_selected_tool()
         print(f'tool = {tool}')
         if tool != 'add':
-            print('0')
             state = self.ecc_render.get_state_at(x, y) 
-            print(state.name)
-            if self.selected_state is not None:
-                print(self.selected_state.name)
 
         if tool == 'add':
-            print('1')
+            # print('1')
             new_state = self.selected_state
             new_state.x = x
             new_state.y = y
@@ -523,20 +519,20 @@ class EccEditor(PageMixin, Gtk.Box):
             self.selected_state = None
             self.enable_add = True
         elif tool == 'move':
-            print('2')
+            # print('2')
             self.selected_state = state
             self.update_bottom_treeview()
         elif tool == 'connect':
             if state is None:
                 self.selected_state = None
-                print('3')
+                # print('3')
             else:
                 if self.selected_state is None:
                     self.selected_state = state
                     # print(f'SELECTED = {self.selected_state.name}')
-                    print('4')
+                    # print('4')
                 else:
-                    print('5')
+                    # print('5')
                     transition = Transition(self.selected_state, state)
                     self.ecc.transition_add(transition)
                     self.selected_state.transition_out_add(transition)

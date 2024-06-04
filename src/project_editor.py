@@ -26,8 +26,8 @@ class ProjectEditor(PageMixin, Gtk.Box):
         self.current_editor = current_editor  # Either a system editor or application editor
         self.current_tool = current_tool
         self.current_editor_label = Gtk.Label()
-        self.system_editor = SystemEditor(window, self, system)
-        self.system_configuration_editor = SystemConfigEditor(system, current_tool)
+        self.system_editor = SystemEditor(self.window, self, self.system)
+        self.system_configuration_editor = SystemConfigEditor(self.system, self)
         self.applications_editors = list()
         
         if current_editor is None:
@@ -44,6 +44,7 @@ class ProjectEditor(PageMixin, Gtk.Box):
         self.vpaned.set_resize_start_child(False)
         self.vpaned.set_end_child(self.current_editor)
         self.vpaned.set_resize_end_child(True)
+        self.vpaned.set_shrink_end_child(False)
         self.vbox.append(self.vpaned)
         self.vbox.set_hexpand(True)
         self.append(self.vbox)
@@ -95,7 +96,7 @@ class ProjectEditor(PageMixin, Gtk.Box):
             
     def build_application_menu(self):       
         for app in self.system.applications:
-            self.applications_editors.append(FunctionBlockEditor(app, project=self))
+            self.applications_editors.append(FunctionBlockEditor(app, project=self, window=self.window))
             self._action_append_menu(self.apps_submenu, app, '-app', self.on_application_editor)
             # label = app.name
             # label_action = label+"-app"

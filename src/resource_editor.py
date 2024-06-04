@@ -1,22 +1,21 @@
-from gi.repository import Adw
 from gi.repository import Gtk
 from gi.repository import Gio
 from gi.repository import Gdk
 from .base import PageMixin
-from .system_renderer import SystemRenderer
 from .fb_editor import FunctionBlockEditor
 
-class SystemConfigEditor(PageMixin, Gtk.Box):
+import gi
+import math
+import cairo
+
+class ResourceEditor(PageMixin, Gtk.Box):
     def __init__(self, system, project, current_tool=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        
+
         self.system = system
         self.project = project
-        self.enable_add = True
         self.current_tool = current_tool
-        self.selected_device = None
-        self.selected_resource = None
-        
+    
         self.set_orientation(Gtk.Orientation.VERTICAL)
         self.hpaned = Gtk.Paned(wide_handle=True)
         self.system_render = SystemRenderer(self.system)
@@ -90,11 +89,7 @@ class SystemConfigEditor(PageMixin, Gtk.Box):
         elif tool == 'inspect':
             resource = self.system_render.get_resource_at(x, y)
             if resource is not None:
-                fb_editor = FunctionBlockEditor(fb_diagram=resource.fb_network, project=self.project)
-                self.project.current_editor = fb_editor
-                self.project.vpaned.set_end_child(fb_editor)
-                self.project.current_editor_label.set_label('Resource: ' + resource.name)
-                
+
 
         self.system_render.queue_draw()
 

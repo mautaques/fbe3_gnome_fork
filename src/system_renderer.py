@@ -12,6 +12,8 @@ class SystemRenderer(Gtk.DrawingArea):
         super().__init__(*args, **kwargs)
         self.system = system
         self.device_dimensions = dict()
+        self.resource_positions = dict()  # Saves resource position drawn inside device
+        self.resource_dimensions = dict()
         self.offset_x, self.offset_y = 0, 0
     
     def draw_grid(self, cr):
@@ -23,7 +25,7 @@ class SystemRenderer(Gtk.DrawingArea):
         cr.rectangle(0, 0, width, height)
         cr.fill()
 
-        cr.set_source_rgba(0, 0, 0, 0.1)
+        cr.set_source_rgba(0, 0, 0, 0.15)
         grid_size = 20
         dot_spacing = 2 
         cr.set_dash([2.5, 2.5], 0) 
@@ -60,26 +62,53 @@ class SystemRenderer(Gtk.DrawingArea):
         cr.set_source_rgb(*txt_color)
         device_x, device_y = self.get_device_position(device)
         radius, width, height = self.write_txt(cr, device.name, device_x, device_y)    
-        res_gap = len(device.resources)*25
-        self.device_dimensions[device] = (radius, width, height)
+        resource_gap = len(device.resources)*25
+        self.device_dimensions[device] = (radius, width, height, resource_gap)
         cr.set_source_rgb(*rec_color)
         cr.set_source_rgb(40/255, 180/255, 180/255)
-        cr.rectangle(device_x - radius, device_y, radius*2, height*2.5+res_gap)
+        cr.rectangle(device_x - radius, device_y, radius*2, height*2.5+resource_gap)
         cr.fill()
         cr.stroke()
         cr.set_source_rgb(250/255, 250/255, 250/255)
         radius, width, height = self.write_txt(cr, device.name, device_x, device_y, 14, 
                                                font_weight=cairo.FONT_WEIGHT_BOLD)
         gap = 25
-        for res in device.resources:
-            self.write_txt(cr, res.name, device_x, device_y+gap, 13, font_slant=cairo.FONT_SLANT_ITALIC)
+        for resource in device.resources:
+            radius, width, height = self.write_txt(cr, resource.name, device_x, device_y+gap, 13, font_slant=cairo.FONT_SLANT_ITALIC)
+            self.resource_positions[resource] = (device_x, device_y+gap)
+            self.resource_dimensions[resource] = (radius, width, height)
             gap += 25
     
+    def get_device_at(self, x, y):
+        for device in self.system.devices:
+            radius, _, height, resource_gap = self.get_device_dimensions(device)
+            if x >= device.x - radius and y >= device.y and x <= device.x + radius and y <= device.y + height*2.5+resource_gap:
+                return device
+        return None
+
+    def get_resource_at(self, x, y):
+        for device in self.system.devices:
+            for resource in device.resources:
+                radius, width, height = self.get_resource_dimensions(resource)
+                res_x, res_y = self.get_resource_positions(resource)
+                if x >= res_x - radius and y >= res_y and x <= res_x + radius and y <= res_y + height:
+                    return resource
+        return None
+
     def draw(self, area, cr, wid, h, data):
         self.draw_grid(cr)
         for dev in self.system.devices:
             self.draw_device(cr, wid, dev, rec_color=(0/255, 0/255, 0/255))
-            
+
+    def get_device_dimensions(self, device):
+        return self.device_dimensions[device][0], self.device_dimensions[device][1], self.device_dimensions[device][2], self.device_dimensions[device][3]  # Returns radius, width, height and resource gap 
+
+    def get_resource_dimensions(self, resource):
+        return self.resource_dimensions[resource][0], self.resource_dimensions[resource][1], self.resource_dimensions[resource][2]  # Returns radius, width and height        
+    
+    def get_resource_positions(self, resource):
+        return self.resource_positions[resource][0], self.resource_positions[resource][1] # Returns x and y of resource inside a device        
+
     def get_device_position(self, device):
         return device.x + self.offset_x, device.y + self.offset_y
     

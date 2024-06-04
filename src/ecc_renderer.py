@@ -27,7 +27,7 @@ class EccRenderer(Gtk.DrawingArea):
         cr.rectangle(0, 0, width, height)
         cr.fill()
 
-        cr.set_source_rgba(0, 0, 0, 0.1)
+        cr.set_source_rgba(0, 0, 0, 0.15)
         grid_size = 20
         dot_spacing = 2 
         cr.set_dash([2.5, 2.5], 0) 

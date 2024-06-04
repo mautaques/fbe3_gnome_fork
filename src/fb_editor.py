@@ -8,12 +8,13 @@ from .ecc_editor import EccEditor
 
 
 class FunctionBlockEditor(PageMixin, Gtk.Box):
-    def __init__(self, app=None, fb_diagram=None, project=None, selected_fb=None, current_tool=None, inspected_block=None, *args, **kwargs):
+    def __init__(self, app=None, fb_diagram=None, project=None, selected_fb=None, current_tool=None, window=None, inspected_block=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.app = app
         self.fb_diagram = fb_diagram
         self.project = project
+        self.window = window
         self.selected_fb = selected_fb
         self.selected_event = None
         self.selected_variable = None
@@ -46,6 +47,23 @@ class FunctionBlockEditor(PageMixin, Gtk.Box):
         self.paned.set_shrink_end_child(False)
         self.scrolled.set_child(self.fb_render)
         self.fb_render.renderer_set_size_request(self.scrolled.get_allocation())
+
+        # self._create_action('map-res', self.on_map_resource)
+        self.menu = Gio.Menu()
+        self.menu.append('Map to', 'win.map-res')
+        self.popover = Gtk.PopoverMenu().new_from_model(self.menu)
+        self.popover.set_parent(self.fb_render)
+        self.popover.set_has_arrow(False)
+        self.popover.set_halign(Gtk.Align.START)
+        self.menu_button = Gtk.MenuButton()
+        self.sidebox.append(self.menu_button)
+        self.click_on_fb = Gtk.GestureClick.new()
+        self.click_on_fb.connect("pressed", self.on_right_click_app)
+        self.click_on_fb.set_button(3)
+        self.fb_render.add_controller(self.click_on_fb)
+
+        self.menu_button.set_popover(self.popover)
+        self.menu_button.set_visible(False)
 
         self.build_treeview()
 
@@ -265,23 +283,25 @@ class FunctionBlockEditor(PageMixin, Gtk.Box):
         return self
 
     def _create_action(self, action_name, callback, *args):
-        app = self.get_ancestor_window()
-        if app is not None:
-            action = Gio.SimpleAction.new(action_name, None)
-            if not args:
-                action.connect("activate", callback)
-                app.add_action(action)
-            else:
-                action.connect("activate", callback, args)
-                app.add_action(action)
+        action = Gio.SimpleAction.new(action_name, None)
+        if not args:
+            action.connect("activate", callback)
+            self.window.add_action(action)
         else:
-            action = Gio.SimpleAction.new(action_name, None)
-            if not args:
-                action.connect("activate", callback)
-                self.add_action(action)
-            else:
-                action.connect("activate", callback, args)
-                self.add_action(action)
+            action.connect("activate", callback, args)
+            self.window.add_action(action)  
+
+    def on_right_click_app(self, gesture, n, x, y):
+        rect = self.menu_button.get_allocation()
+        rect.width = 0
+        rect.height = 0
+        rect.x = x
+        rect.y = y
+        self.popover.set_pointing_to(rect)
+        self.popover.popup()
+
+    def on_map_resource(self, action, param=None):
+        print("map")
 
     def on_my_app(self):
         print('app')
@@ -352,8 +372,10 @@ class FunctionBlockEditor(PageMixin, Gtk.Box):
             self.selected_fb = fb
             fb_diagram = fb.get_fb_network()
             if fb_diagram != None:
-                fb_editor = FunctionBlockEditor(fb_diagram, inspected_block=fb)
-                window.add_tab(fb_editor, 'Inspecting: ' + fb.name)
+                fb_editor = FunctionBlockEditor(fb_diagram=fb_diagram, inspected_block=fb)
+                self.project.current_editor = fb_editor
+                self.project.vpaned.set_end_child(fb_editor)
+                self.project.current_editor_label.set_label('Inspecting: ' + fb.name)
             elif fb.is_basic():
                 ecc_editor = EccEditor(fb, self.current_tool)
                 self.project.current_editor = ecc_editor

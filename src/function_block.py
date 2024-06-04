@@ -3,11 +3,6 @@ import sys
 import copy
 import datetime
 import time
-
-# cur_path = os.path.realpath(__file__)
-# base_path = os.path.dirname(os.path.dirname(cur_path))
-# sys.path.insert(1, base_path)   
-        
         
 class Event():
     def __init__(self, name='', active=False, fb=None, is_input=False, comment="", x=0.0, y=0.0, *args, **kwargs):
@@ -966,6 +961,9 @@ class System():
             if dev.name == name:
                 return dev
         return None
+    
+    def device_remove(self, device):
+        self.devices.remove(device)
     
     def application_add(self, app):
         self.applications.append(app)
