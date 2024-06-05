@@ -324,6 +324,47 @@ def convert_xml_basic_fb(xml):
     # print("done")
     return FB, fb_diagram
 
+def convert_xml_resource(xml):
+    tree = ET.parse(xml)
+    root = tree.getroot()
+    for read in root.iter("ResourceType"):
+        name = read.get("Name")
+        comment = read.get("Comment")
+        RESOURCE = Resource(name, comment)
+    
+    for read in root.iter("Identification"):
+        standard = read.get("Standard")
+        classification = read.get("Classification")
+        app_domain = read.get("ApplicationDomain")
+        function = read.get("Function")
+        type = read.get("Type")
+        description = read.get("Description")
+        identification = Identification(standard, classification, app_domain, function, type, description)
+        RESOURCE.identification = identification
+    
+    for read in root.iter("VersionInfo"):
+        version = read.get("Version")
+        organization = read.get("Organization")
+        author = read.get("Author")
+        date = read.get("Date")
+        remarks = read.get("Remarks")
+        version_info = VersionInfo(version, organization, author, date, remarks)
+        RESOURCE.version_info = version_info
+
+    for read in root.iter("FBNetwork"):
+        fb_diagram = Composite()
+        for read_1 in read.iter("FB"):
+            fb, _ = convert_xml_basic_fb('Projects/fbe3_gnome/src/models/fb_library/'+read_1.get("Type")+'.fbt')  # Blocks declared in FBNetwork must be inside src/models/diac_library
+            fb.change_pos(float(read_1.get("x"))/3, float(read_1.get("y"))/3)
+            fb.name = read_1.get("Name")
+            fb.type = read_1.get("Type")
+            fb_diagram.add_function_block(fb)
+
+        RESOURCE.fb_diagram = fb_diagram
+
+    return RESOURCE
+
+
 def convert_xml_system(xml):
     tree = ET.parse(xml)
     root = tree.getroot()
@@ -361,7 +402,7 @@ def convert_xml_system(xml):
             fb_diagram = Composite()
             for read_2 in read_1.iter("FB"):
                 fb, _ = convert_xml_basic_fb('Projects/fbe3_gnome/src/models/fb_library/'+read_2.get("Type")+'.fbt')  # Blocks declared in FBNetwork must be inside src/models/diac_library
-                fb.change_pos(float(read_2.get("x"))/4, float(read_2.get("y"))/4)
+                fb.change_pos(float(read_2.get("x"))/3, float(read_2.get("y"))/3)
                 fb.name = read_2.get("Name")
                 fb.type = read_2.get("Type")
                 for read_3 in read_2.iter("Parameter"):
@@ -426,10 +467,10 @@ def convert_xml_system(xml):
             
             for read_2 in read_1.iter("FBNetwork"):
                 fb_diagram = Composite()
-                fb, _ = convert_xml_basic_fb('Projects/fbe3_gnome/src/models/fb_library/E_RESTART.fbt')
-                fb.name = 'START'
-                fb.change_pos(25, 25)
-                fb_diagram.add_function_block(fb)
+                resource = convert_xml_resource('Projects/fbe3_gnome/src/models/fb_library/'+resource_type+'.res')
+                resource.name = resource_name
+                resource.change_pos(25, 25)
+                fb_diagram.add_function_block(resource)
                 for read_3 in read_2.iter("FB"):
                     fb, _ = convert_xml_basic_fb('Projects/fbe3_gnome/src/models/fb_library/'+read_3.get("Type")+'.fbt')  # Blocks declared in FBNetwork must be inside src/models/diac_library
                     fb.change_pos(float(read_3.get("x"))/4, float(read_3.get("y"))/5)

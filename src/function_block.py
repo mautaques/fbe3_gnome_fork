@@ -906,6 +906,9 @@ class Resource():
         self.fb_network = fb_network
         self.device = None
     
+    def change_pos(self, pos_x, pos_y):
+        self.x, self.y = pos_x, pos_y  
+    
 class Device():
     def __init__(self, name, type, comment='', x=0.0, y=0.0):
         self.name = name
