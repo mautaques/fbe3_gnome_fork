@@ -4,7 +4,6 @@ import copy
 import datetime
 import time
 
-from .xmlParser import *
         
 class Event():
     def __init__(self, name='', active=False, fb=None, is_input=False, comment="", x=0.0, y=0.0, *args, **kwargs):
@@ -709,7 +708,6 @@ class FunctionBlock():
         
         f = open(file_path_name, 'w')
         f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
-        #f.write('<!DOCTYPE FBType SYSTEM "http://wwww.hobloc.com/xml/LibraryElement.dtd" >\n')
         f.write(f'<FBType Name="{self.name}" Comment="{self.comment}">\n')
         f.write('\t<Identification Standard=""/>\n')
         f.write(f'\t<VersionInfo Version="" Author="AUTHOR" Date="{datetime.date.today()}"/>\n')
@@ -897,7 +895,7 @@ class VersionInfo():
         self.remarks = remarks
     
 class Resource():
-    def __init__(self, name, type, comment='', x=0.0, y=0.0, fb_network=None):
+    def __init__(self, name, type='', comment='', x=0.0, y=0.0, fb_network=None):
         self.name = name
         self.type = type
         self.comment = comment
@@ -909,7 +907,7 @@ class Resource():
         self.device = None
     
     def change_pos(self, pos_x, pos_y):
-        self.x, self.y = pos_x, pos_y  
+        self.x, self.y = pos_x, pos_y   
     
 class Device():
     def __init__(self, name, type, comment='', x=0.0, y=0.0):
@@ -925,6 +923,10 @@ class Device():
         
     def resource_add(self, resource):
         self.resources.append(resource)
+
+    def _resource_add_(self, name):
+        resource = Resource(name=name, type=None)
+        self.resource_add(resource)
         
     def resource_get(self, name):
         for resource in self.resources:
@@ -957,8 +959,7 @@ class Device():
             return self.resource_remove(resource)
         return False
     
-    def resource_change_type(self, resource, new_type):
-        new_resource = convert_xml_resource('Projects/fbe3_gnome/src/models/fb_library/'+new_type+'.res')
+    def resource_change_type(self, resource, new_type, new_resource):
         resource.type = new_type
         resource.fb_network = new_resource.fb_network
         

@@ -132,6 +132,10 @@ class FbeWindow(Adw.ApplicationWindow):
             fb_diagram.add_function_block(fb_choosen)
             self.add_tab_editor(fb_diagram, fb_choosen.name, fb_choosen)
 
+    def on_import_resource_response(self, type_name):
+        resource = convert_xml_resource('Projects/fbe3_gnome/src/models/fb_library/'+type_name+'.res')
+        return resource
+
     def open_file(self, file):
         file.load_contents_async(None, self.open_file_complete)
 

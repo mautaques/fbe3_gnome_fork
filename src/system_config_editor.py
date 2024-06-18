@@ -5,6 +5,7 @@ from gi.repository import Gdk
 from .base import PageMixin
 from .system_renderer import SystemRenderer
 from .fb_editor import FunctionBlockEditor
+from .xmlParser import *
 
 class SystemConfigEditor(PageMixin, Gtk.Box):
     def __init__(self, system, project, current_tool=None, *args, **kwargs):
@@ -15,6 +16,7 @@ class SystemConfigEditor(PageMixin, Gtk.Box):
         self.enable_add = True
         self.current_tool = current_tool
         self.selected_device = None
+        self.last_selected_device = None
         self.selected_resource = None
         
         self.set_orientation(Gtk.Orientation.VERTICAL)
@@ -52,7 +54,7 @@ class SystemConfigEditor(PageMixin, Gtk.Box):
         
         #  | -------------- Resource --------------- |
         
-        self.resources_liststore = Gtk.ListStore(str, bool, object)
+        self.resources_liststore = Gtk.ListStore(str, str, str, object)
         
         self.resources_treeview = Gtk.TreeView(model=self.resources_liststore)
         self.resources_treeview_selection = self.resources_treeview.get_selection()
@@ -65,7 +67,7 @@ class SystemConfigEditor(PageMixin, Gtk.Box):
         renderer_text_1.set_property('editable', True)
         renderer_text_1.connect('edited', self.resource_text_edited)
 
-        column_text_1 = Gtk.TreeViewColumn("Resource", renderer_text_1, text=1)
+        column_text_1 = Gtk.TreeViewColumn("Resource", renderer_text_1, text=0)
         self.resources_treeview.append_column(column_text_1)
         
         #  | ------------- Type ---------------- |
@@ -83,7 +85,7 @@ class SystemConfigEditor(PageMixin, Gtk.Box):
         renderer_text_1.set_property('editable', True)
         renderer_text_1.connect('edited', self.comment_text_edited)
 
-        column_text_1 = Gtk.TreeViewColumn("Comment", renderer_text_1, text=1)
+        column_text_1 = Gtk.TreeViewColumn("Comment", renderer_text_1, text=2)
         self.resources_treeview.append_column(column_text_1)
         
         # | -------------------------------------- |
@@ -107,11 +109,17 @@ class SystemConfigEditor(PageMixin, Gtk.Box):
     
     def update_treeview(self):
         cursor_path, cursor_focus_column = self.resources_treeview.get_cursor()
+        current_device = None
+        if self.selected_device is None:
+            current_device = self.last_selected_device
+        else:
+            current_device = self.selected_device
 
         self.resources_liststore.clear()
         resources_rows = list()
       
-        for resource in self.selected_device.resources:
+        for resource in current_device.resources:
+            print(resource.name)
             resources_rows.append([resource.name, resource.type, resource.comment, resource])
 
         resources_rows.sort(key=lambda row: row[0])
@@ -123,7 +131,10 @@ class SystemConfigEditor(PageMixin, Gtk.Box):
             self.resources_treeview.set_cursor(cursor_path, cursor_focus_column, False)
             
     def resource_add(self, widget):
-        self.selected_device.resource_add(name="new_resource")
+        if self.selected_device is None:
+            self.last_selected_device._resource_add_(name="new_resource")
+        else:
+            self.selected_device._resource_add_(name="new_resource")
         self.update_treeview()
         self.trigger_change()
 
@@ -132,25 +143,38 @@ class SystemConfigEditor(PageMixin, Gtk.Box):
         for tree_path in tree_path_list:
             tree_iter = self.resources_liststore.get_iter(tree_path)
             resource = self.resources_liststore.get(tree_iter, 3)[0]
-            self.selected_device.resource_remove(resource)
+            if self.selected_device is None:
+                self.last_selected_device.resource_remove(resource)
+            else:
+                self.selected_device.resource_remove(resource)
         self.update_treeview()
         self.trigger_change()        
     
     def resource_text_edited(self, widget, path, resource_name):
         resource = self.resources_liststore[path][3]
-        self.device.resource_rename(resource, resource_name)
+        if self.selected_device is None:
+            self.last_selected_device.resource_rename(resource, resource_name)            
+        else:
+            self.selected_device.resource_rename(resource, resource_name)
         self.update_treeview()
         self.trigger_change()
         
     def type_text_edited(self, widget, path, new_type):
         resource = self.resources_liststore[path][3]
-        self.device.resource_change_type(resource, new_type)
+        new_resource = convert_xml_resource('Projects/fbe3_gnome/src/models/fb_library/'+new_type+'.res')
+        if self.selected_device is None:
+            self.last_selected_device.resource_change_type(resource, new_type, new_resource)            
+        else:
+            self.selected_device.resource_change_type(resource, new_typem, new_resource)
         self.update_treeview()
         self.trigger_change()
         
     def comment_text_edited(self, widget, path, new_comment):
         resource = self.resources_liststore[path][3]
-        self.device.resource_change_comment(resource, new_comment)
+        if self.selected_device is None:
+            self.last_selected_device.resource_change_comment(resource, new_comment)            
+        else:
+            self.selected_device.resource_change_comment(resource, new_comment)
         self.update_treeview()
         self.trigger_change()
     
@@ -166,6 +190,7 @@ class SystemConfigEditor(PageMixin, Gtk.Box):
                 self.selected_device.x = x-self.system_render.offset_x
                 self.selected_device.y = y-self.system_render.offset_y
                 self.trigger_change()
+                self.update_treeview()
                 self.update_scrolled_window()
 
     def button_press(self, e, data, x, y):
@@ -211,6 +236,7 @@ class SystemConfigEditor(PageMixin, Gtk.Box):
 
         if tool_name == 'move':
             self.update_scrolled_window()
+            self.last_selected_device = self.selected_device
             self.selected_device = None
 
     def trigger_change(self):

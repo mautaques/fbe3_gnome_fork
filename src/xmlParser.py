@@ -5,8 +5,6 @@ import xml.etree.ElementTree as ET
 cur_path = os.path.realpath(__file__)
 base_path = os.path.dirname(os.path.dirname(cur_path))
 sys.path.insert(1, base_path)
-# from pathlib import Path
-# path = Path("/here/your/path/file.txt")
 
 from .function_block import *
 
@@ -330,7 +328,7 @@ def convert_xml_resource(xml):
     for read in root.iter("ResourceType"):
         name = read.get("Name")
         comment = read.get("Comment")
-        RESOURCE = Resource(name, comment)
+        RESOURCE = Resource(name=name, comment=comment)
     
     for read in root.iter("Identification"):
         standard = read.get("Standard")

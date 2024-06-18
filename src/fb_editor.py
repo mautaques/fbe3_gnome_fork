@@ -318,8 +318,8 @@ class FunctionBlockEditor(PageMixin, Gtk.Box):
                 #print(self.selected_fb.x)
                 self.selected_fb.x = x-self.fb_render.offset_x
                 self.selected_fb.y = y-self.fb_render.offset_y
-                self.fb_render.queue_draw()
                 self.trigger_change()
+                self.update_treeview()
                 self.update_scrolled_window()
 
     def button_press(self, e, data, x, y):
