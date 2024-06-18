@@ -3,6 +3,7 @@ from gi.repository import Gio
 from gi.repository import Gdk
 from .base import PageMixin
 from .fb_editor import FunctionBlockEditor
+from .system_renderer import SystemRenderer
 
 import gi
 import math
@@ -90,8 +91,7 @@ class ResourceEditor(PageMixin, Gtk.Box):
             resource = self.system_render.get_resource_at(x, y)
             if resource is not None:
 
-
-        self.system_render.queue_draw()
+                self.system_render.queue_draw()
 
     def button_release(self, e, data, x, y):
         window = self.get_ancestor_window()

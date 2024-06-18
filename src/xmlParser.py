@@ -8,7 +8,7 @@ sys.path.insert(1, base_path)
 # from pathlib import Path
 # path = Path("/here/your/path/file.txt")
 
-from .function_block import*
+from .function_block import *
 
 def convert_xml_basic_fb(xml):
     print("XML: " + cur_path)
@@ -356,11 +356,15 @@ def convert_xml_resource(xml):
         for read_1 in read.iter("FB"):
             fb, _ = convert_xml_basic_fb('Projects/fbe3_gnome/src/models/fb_library/'+read_1.get("Type")+'.fbt')  # Blocks declared in FBNetwork must be inside src/models/diac_library
             fb.change_pos(float(read_1.get("x"))/3, float(read_1.get("y"))/3)
+            if fb.x < 100:
+                fb.x = 100
+            if fb.y < 50:
+                fb.y = 50
             fb.name = read_1.get("Name")
             fb.type = read_1.get("Type")
             fb_diagram.add_function_block(fb)
 
-        RESOURCE.fb_diagram = fb_diagram
+        RESOURCE.fb_network = fb_diagram
 
     return RESOURCE
 
@@ -470,10 +474,14 @@ def convert_xml_system(xml):
                 resource = convert_xml_resource('Projects/fbe3_gnome/src/models/fb_library/'+resource_type+'.res')
                 resource.name = resource_name
                 resource.change_pos(25, 25)
-                fb_diagram.add_function_block(resource)
+                fb_diagram.add_function_block(resource.fb_network.function_blocks[0])
                 for read_3 in read_2.iter("FB"):
                     fb, _ = convert_xml_basic_fb('Projects/fbe3_gnome/src/models/fb_library/'+read_3.get("Type")+'.fbt')  # Blocks declared in FBNetwork must be inside src/models/diac_library
-                    fb.change_pos(float(read_3.get("x"))/4, float(read_3.get("y"))/5)
+                    fb.change_pos(float(read_3.get("x"))/3, float(read_3.get("y"))/3)
+                    if fb.x < 100:
+                        fb.x = fb.x + 100
+                    if fb.y < 50:
+                        fb.y = abs(fb.y) + 50
                     fb.name = read_3.get("Name")
                     fb.type = read_3.get("Type")
                     fb_diagram.add_function_block(fb)
@@ -525,9 +533,10 @@ def convert_xml_system(xml):
         source_app = SYSTEM.application_get(read.get("From").split(".")[0])
         source_fb = source_app.subapp_network.get_fb(read.get("From").split(".")[1])
         source = (source_app, source_fb)  # (app, F_ADD)
-        destination_resource = SYSTEM.device_get(read.get("To").split(".")[0]).resource_get(read.get("To").split(".")[1])
+        destination_device = SYSTEM.device_get(read.get("To").split(".")[0])
+        destination_resource = destination_device.resource_get(read.get("To").split(".")[1])
         destination_fb = destination_resource.fb_network.get_fb(read.get("To").split(".")[2])
-        destination = (destination_resource, destination_fb)  # (EMB_RES, F_ADD)
-        SYSTEM.mapping_add((source, destination))  # Adds the tuple ((app, F_ADD), (EMB_RES, F_ADD))
+        destination = (destination_device, destination_resource, destination_fb)  # (EMB_RES, F_ADD)
+        SYSTEM.mapping_add((source, destination))  # Adds the tuple ((app, F_ADD), (DEV_FORTE, EMB_RES, F_ADD))
 
     return SYSTEM

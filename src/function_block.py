@@ -3,6 +3,8 @@ import sys
 import copy
 import datetime
 import time
+
+from .xmlParser import *
         
 class Event():
     def __init__(self, name='', active=False, fb=None, is_input=False, comment="", x=0.0, y=0.0, *args, **kwargs):
@@ -925,10 +927,43 @@ class Device():
         self.resources.append(resource)
         
     def resource_get(self, name):
-        for res in self.resources:
-            if res.name == name:
-                return res
+        for resource in self.resources:
+            if resource.name == name:
+                return resource
         return None
+    
+    def resource_name_exists(self, resource_name):
+        return self.resource_get(resource_name) is not None
+    
+    def resource_rename(self, resource, new_name):
+        if resource.name == new_name:
+            return False
+        if self.resource_name_exists(new_name):
+            print("there's a resource with that name")
+            return False
+        resource.name = new_name
+        return True
+    
+    def resource_remove(self, resource):
+        if resource not in self.resources:
+            return False
+        self.system.resource_mapping_remove(resource)
+        self.resources.remove(resource)
+        return True
+    
+    def _resource_remove_(self, resource_name):
+        resource = self.resource_name_exists(resource_name)
+        if resource is not None:
+            return self.resource_remove(resource)
+        return False
+    
+    def resource_change_type(self, resource, new_type):
+        new_resource = convert_xml_resource('Projects/fbe3_gnome/src/models/fb_library/'+new_type+'.res')
+        resource.type = new_type
+        resource.fb_network = new_resource.fb_network
+        
+    def resource_change_comment(self, resource, new_comment):
+        self.resource.comment = new_comment
         
 class Application():
     def __init__(self, name, comment=''):
@@ -946,27 +981,33 @@ class System():
         self.identification = Identification()
         self.applications = list()
         self.devices = list()
-        self.mapping = list()  # From FB to RES e.g mapping[CTD] = device.RES.CTD
+        self.mapping = set()  # From FB to RES e.g mapping[CTD] = device.RES.CTD
         self.unnamed_applications = 0
         
     def applications_name_str(self):
         app_names = ''
         for app in self.applications:
             app_names += app.name + '\n'
-        return app_names
+        return app_names        
     
     def device_add(self, device):
         print(f'device {device.name} added')
         self.devices.append(device)
     
     def device_get(self, name):
-        for dev in self.devices:
-            if dev.name == name:
-                return dev
+        for device in self.devices:
+            if device.name == name:
+                return device
         return None
     
     def device_remove(self, device):
         self.devices.remove(device)
+        
+    def _device_remove_(self, device):
+        if device not in self.devices:
+            return False
+        self.device_mapping_remove(device)
+        self.device_remove(device)
     
     def application_add(self, app):
         self.applications.append(app)
@@ -1002,4 +1043,19 @@ class System():
         self.applications.remove(app)
     
     def mapping_add(self, mapping):
-        self.mapping.append(mapping)
+        self.mapping.add(mapping)
+        
+    def mapping_remove(self, connection):
+        self.mapping.discard(connection)
+    
+    def device_mapping_remove(self, device):
+        for connection in list(self.mapping):
+            if device.name == connection[1][0].name:
+                self.mapping_remove(connection)
+        
+    def resource_mapping_remove(self, resource):
+        for connection in list(self.mapping):
+            if resource.name == connection[1][1].name:
+                self.mapping_remove(connection)
+                
+        
