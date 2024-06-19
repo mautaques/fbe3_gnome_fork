@@ -17,22 +17,24 @@ class ProjectEditor(PageMixin, Gtk.Box):
     sys_config_submenu = Gtk.Template.Child()
     apps_submenu = Gtk.Template.Child()
     
-    def __init__(self, window, system=None, current_editor=None, current_tool=None, system_editor=None, *args, **kwargs):
+    def __init__(self, window, system=None, current_page=None, current_tool=None, system_editor=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
         self.window = window
         self.system = system
         self.editor_index = 0
-        self.current_editor = current_editor  # Either a system editor or application editor
+        self.current_page = current_page  # Either a system editor or application editor
+        self.current_page_label = Gtk.Label()
+        self.last_page = None
+        self.last_page_label = None
         self.current_tool = current_tool
-        self.current_editor_label = Gtk.Label()
         self.system_editor = SystemEditor(self.window, self, self.system)
         self.system_configuration_editor = SystemConfigEditor(self.system, self)
         self.applications_editors = list()
         
-        if current_editor is None:
-            self.current_editor = self.system_editor  # Always open in system editor 
-            self.current_editor_label.set_label('System Information')
+        if current_page is None:
+            self.current_page = self.system_editor  # Always open in system editor 
+            self.current_page_label.set_label('System Information')
         
         self.open_menu = Gio.Menu.new()
         self.project_bar = Gtk.ActionBar(valign=Gtk.Align.START)
@@ -42,7 +44,7 @@ class ProjectEditor(PageMixin, Gtk.Box):
         self.vbox.set_vexpand(True)
         self.vpaned.set_start_child(self.project_bar)
         self.vpaned.set_resize_start_child(False)
-        self.vpaned.set_end_child(self.current_editor)
+        self.vpaned.set_end_child(self.current_page)
         self.vpaned.set_resize_end_child(True)
         self.vpaned.set_shrink_end_child(False)
         self.vbox.append(self.vpaned)
@@ -55,13 +57,14 @@ class ProjectEditor(PageMixin, Gtk.Box):
         self._create_action("system-configuration", self.on_system_configuration)
         self._create_action("apps-swipe-left", self.on_apps_swipe_left)
         self._create_action("apps-swipe-right", self.on_apps_swipe_right)
+        self._create_action("last-page", self.goto_last_page)
         
         
         self.build_application_menu()
         self.build_system_config_menu()
             
         self.project_bar.pack_start(self.project_menu_button)
-        self.project_bar.pack_start(self.current_editor_label)
+        self.project_bar.pack_start(self.current_page_label)
           
 
     def _create_action(self, action_name, callback, *args):
@@ -113,46 +116,65 @@ class ProjectEditor(PageMixin, Gtk.Box):
             self.apps_submenu.append(label, "win."+label_action)
             
     def on_system_information(self, action, param=None):
-        self.current_editor_label.set_label('System Information')
-        self.current_editor = self.system_editor
-        self.vpaned.set_end_child(self.current_editor)
+        self.last_page = self.current_page
+        self.last_page_label = self.current_page_label.get_label()
+        self.current_page_label.set_label('System Information')
+        self.current_page = self.system_editor
+        self.vpaned.set_end_child(self.current_page)
         
     def on_system_configuration(self, action, param=None):
-        self.current_editor_label.set_label('System Configuration')
-        self.current_editor = self.system_configuration_editor
-        self.vpaned.set_end_child(self.current_editor)
+        self.last_page = self.current_page
+        self.last_page_label = self.current_page_label.get_label()
+        self.current_page_label.set_label('System Configuration')
+        self.current_page = self.system_configuration_editor
+        self.vpaned.set_end_child(self.current_page)
     
     def on_apps_swipe_left(self, action, param=None):
         if self.editor_index == 0:
             self.editor_index = len(self.applications_editors)-1
         else:
             self.editor_index -= 1
-        self.current_editor_label.set_label(self.applications_editors[self.editor_index].app.name)
-        self.current_editor = self.applications_editors[self.editor_index]
-        self.vpaned.set_end_child(self.current_editor)
+        self.last_page = self.current_page
+        self.last_page_label = self.current_page_label.get_label()
+        self.current_page_label.set_label(self.applications_editors[self.editor_index].app.name)
+        self.current_page = self.applications_editors[self.editor_index]
+        self.vpaned.set_end_child(self.current_page)
             
     def on_apps_swipe_right(self, action, param=None):
         self.editor_index += 1
         if self.editor_index == len(self.applications_editors):
             self.editor_index = 0
-        self.current_editor_label.set_label(self.applications_editors[self.editor_index].app.name)
-        self.current_editor = self.applications_editors[self.editor_index]
-        self.vpaned.set_end_child(self.current_editor)
+        self.last_page = self.current_page
+        self.last_page_label = self.current_page_label.get_label()
+        self.current_page_label.set_label(self.applications_editors[self.editor_index].app.name)
+        self.current_page = self.applications_editors[self.editor_index]
+        self.vpaned.set_end_child(self.current_page)
 
     def on_application_editor(self, action, param=None, app=None):
         if isinstance(app, tuple):
             app_editor = self.application_editor_get(app[0])
         else:
             app_editor = self.application_editor_get(app)
-        self.current_editor_label.set_label(app_editor.app.name)
-        self.current_editor = app_editor
-        self.vpaned.set_end_child(self.current_editor)
+        self.last_page = self.current_page
+        self.current_page_label.set_label(app_editor.app.name)
+        self.current_page = app_editor
+        self.vpaned.set_end_child(self.current_page)
     
     def application_editor_get(self, app):
         for editor in self.applications_editors:
             if editor.app.name == app.name:
                 return editor
         return None
+
+    def goto_last_page(self, action, param=None):
+        if self.last_page is not None:
+            current_page_label = self.current_page_label.get_label()
+            current_page = self.current_page
+            self.current_page = self.last_page
+            self.current_page_label.set_label(self.last_page_label)
+            self.last_page = current_page
+            self.last_page_label = current_page_label
+            self.vpaned.set_end_child(self.current_page)
 
     def save_file_dialog(self, action, _):
         self._native = Gtk.FileChooserNative(

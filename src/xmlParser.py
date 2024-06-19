@@ -328,6 +328,7 @@ def convert_xml_resource(xml):
     for read in root.iter("ResourceType"):
         name = read.get("Name")
         comment = read.get("Comment")
+        print(f'RES COMMENT: {comment}')
         RESOURCE = Resource(name=name, comment=comment)
     
     for read in root.iter("Identification"):

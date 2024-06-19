@@ -131,7 +131,7 @@
                             <property name="homogeneous">false</property>
                             <child>
                               <object class="GtkButton" id="edit_fb_btn">
-                                <property name="icon-name">edit</property>
+                                <property name="icon-name">inspect_fb</property>
                                 <property name="has-frame">false</property>
                               </object>
                             </child>

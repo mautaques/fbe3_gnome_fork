@@ -373,17 +373,20 @@ class FunctionBlockEditor(PageMixin, Gtk.Box):
             fb_diagram = fb.get_fb_network()
             if fb_diagram != None:
                 fb_editor = FunctionBlockEditor(fb_diagram=fb_diagram, inspected_block=fb)
-                self.project.current_editor = fb_editor
+                self.project.last_page = self.project.current_page
+                self.project.last_page_label = self.project.current_page_label.get_label()
+                self.project.current_page = fb_editor
                 self.project.vpaned.set_end_child(fb_editor)
-                self.project.current_editor_label.set_label('Inspecting: ' + fb.name)
+                self.project.current_page_label.set_label('Inspecting: ' + fb.name)
             elif fb.is_basic():
                 ecc_editor = EccEditor(fb, self.current_tool)
-                self.project.current_editor = ecc_editor
+                self.project.last_page = self.project.current_page
+                self.project.last_page_label = self.project.current_page_label.get_label()
+                self.project.current_page = ecc_editor
                 self.project.vpaned.set_end_child(ecc_editor)
-                self.project.current_editor_label.set_label('ECC: ' + fb.name)
+                self.project.current_page_label.set_label('ECC: ' + fb.name)
                 # window.add_tab(ecc_editor, 'ECC: ' + fb.name)
             self.update_treeview()
-            self.fb_render.queue_draw()
             self.trigger_change()
 
 
@@ -395,6 +398,7 @@ class FunctionBlockEditor(PageMixin, Gtk.Box):
 
         if tool_name == 'move':
             self.update_scrolled_window()
+            self.update_treeview()
             self.selected_fb = None
 
     def update_scrolled_window(self):

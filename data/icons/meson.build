@@ -12,7 +12,8 @@ scalable_icons = [
 	scalable_dir / 'save_as.png',
 	scalable_dir / 'new_fb.png',
 	scalable_dir / ('@0@.svg').format(application_id),
-	scalable_dir / 'plus-symbolic.svg'
+	scalable_dir / 'plus-symbolic.svg',
+	scalable_dir / 'inspect_fb.png'
 ]
 install_data(
   scalable_icons,

@@ -223,9 +223,11 @@ class SystemConfigEditor(PageMixin, Gtk.Box):
             resource = self.system_render.get_resource_at(x, y)
             if resource is not None:
                 fb_editor = FunctionBlockEditor(fb_diagram=resource.fb_network, project=self.project)
-                self.project.current_editor = fb_editor
+                self.project.last_page = self.project.current_page
+                self.project.last_page_label = self.project.current_page_label.get_label()
+                self.project.current_page = fb_editor
                 self.project.vpaned.set_end_child(fb_editor)
-                self.project.current_editor_label.set_label('Resource: ' + resource.name)
+                self.project.current_page_label.set_label('Resource: ' + resource.name)
                 
 
         self.system_render.queue_draw()

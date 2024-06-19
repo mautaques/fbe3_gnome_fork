@@ -44,6 +44,24 @@ class SystemRenderer(Gtk.DrawingArea):
         cr.set_dash((), 0.0)
         cr.set_line_width(2.0)
         
+    def maximum_radius(self, cr, device):
+        max_radius_resource = 0
+        max_height = 0
+        _, _, width, height, _, _ = cr.text_extents(device.name)
+        min_radius = self.device_txt_radius(width, height) + self.TEXT_GAP
+        if min_radius > max_radius_resource:
+                max_radius_resource = min_radius
+        if height > max_height:
+            max_height = height
+        for resource in device.resources:
+            _, _, width, height, _, _ = cr.text_extents(resource.name)
+            min_radius_resource = self.device_txt_radius(width, height) + self.TEXT_GAP
+            if min_radius_resource > max_radius_resource:
+                max_radius_resource = min_radius_resource
+            if height > max_height:
+                max_height = height
+        return max_radius_resource, max_height
+        
     def write_txt(self, cr, text, x, y,
                   font_size=15, font_family='Sans',
                   font_slant=cairo.FONT_SLANT_NORMAL,
@@ -63,10 +81,11 @@ class SystemRenderer(Gtk.DrawingArea):
         device_x, device_y = self.get_device_position(device)
         radius, width, height = self.write_txt(cr, device.name, device_x, device_y)    
         resource_gap = len(device.resources)*25
-        self.device_dimensions[device] = (radius, width, height, resource_gap)
         cr.set_source_rgb(*rec_color)
         cr.set_source_rgb(40/255, 180/255, 180/255)
-        cr.rectangle(device_x - radius, device_y, radius*2, height*2.5+resource_gap)
+        max_radius, max_height = self.maximum_radius(cr, device)    
+        self.device_dimensions[device] = (max_radius, width, max_height, resource_gap)
+        cr.rectangle(device_x - max_radius, device_y, max_radius*2, max_height*2.5+resource_gap)
         cr.fill()
         cr.stroke()
         cr.set_source_rgb(250/255, 250/255, 250/255)

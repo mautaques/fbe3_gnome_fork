@@ -75,7 +75,6 @@ class EccRenderer(Gtk.DrawingArea):
                     max_height = height
         return max_radius_alg, max_radius_event, max_height
             
-        
     def write_txt(self, cr, text, x, y,
                   font_size=15, font_family='Sans',
                   font_slant=cairo.FONT_SLANT_NORMAL,

@@ -176,8 +176,8 @@ class FbeWindow(Adw.ApplicationWindow):
         # If the user selected a file...
         if file is not None:
             fb_choosen,_  = convert_xml_basic_fb(file_name)
-            if isinstance(self.get_current_tab_widget().current_editor, FunctionBlockEditor):
-                fb_editor = self.get_current_tab_widget().current_editor
+            if isinstance(self.get_current_tab_widget().current_page, FunctionBlockEditor):
+                fb_editor = self.get_current_tab_widget().current_page
                 fb_editor.selected_fb = fb_choosen
             else:
                 print('not fb editor')
