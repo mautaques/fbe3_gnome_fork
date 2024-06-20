@@ -14,6 +14,8 @@
               <object class="GtkMenuButton">
                 <property name="primary">True</property>
                 <property name="label">test</property>
+                <property name="direction">down</property>
+                <property name="always-show-arrow">true</property>
                 <property name="icon-name">plus-symbolic</property>
                 <property name="tooltip-text" translatable="yes">Menu</property>
                 <property name="menu-model">primary_menu</property>
@@ -226,6 +228,8 @@
         <attribute name="label" translatable="yes">_About FBE</attribute>
         <attribute name="action">app.about</attribute>
       </item>
+    </section>
+    <section>
       <item>
         <attribute name="label" translatable="yes">_Quit</attribute>
         <attribute name="action">app.quit</attribute>

@@ -1058,5 +1058,77 @@ class System():
         for connection in list(self.mapping):
             if resource.name == connection[1][1].name:
                 self.mapping_remove(connection)
+    
+    def save(self, file_path_name=None):
+        if file_path_name is None:
+            if self._file_path_name is None:
+                return False
+            file_path_name = self._file_path_name
+        else:
+            self.set_file_path_name(file_path_name)
+        
+        f = open(file_path_name, 'w')
+        f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+        f.write(f'<FBType Name="{self.name}" Comment="{self.comment}">\n')
+        f.write('\t<Identification Standard=""/>\n')
+        f.write(f'\t<VersionInfo Version="" Author="AUTHOR" Date="{datetime.date.today()}"/>\n')
+        f.write('\t<InterfaceList>\n')
+        f.write('\t\t<EventInputs>\n')
+        for event in self.events:
+            if event.is_input:
+                if event.variables:
+                    f.write(f'\t\t\t<Event Name="{event.name}" Type="Event" Comment="{event.comment}">\n')
+                    for var in event.variables:
+                        f.write(f'\t\t\t\t<With Var="{var.name}"/>\n')
+                    f.write('\t\t\t</Event>\n')
+                else:
+                    f.write(f'\t\t\t<Event Name="{event.name}" Type="Event" Comment="{event.comment}"/>\n')
+
+        f.write('\t\t</EventInputs>\n')
+        f.write('\t\t<EventOutputs>\n')
+        for event in self.events:
+            if not event.is_input:
+                f.write(f'\t\t\t<Event Name="{event.name}" Type="Event" Comment="{event.comment}">\n')
+                for var in event.variables:
+                    f.write(f'\t\t\t\t<With Var="{var.name}"/>\n')
+                f.write('\t\t\t</Event>\n')
+        f.write('\t\t</EventOutputs>\n')
+        f.write('\t\t<InputVars>\n')
+        for var in self.variables:
+            if var.is_input:
+                f.write(f'\t\t\t<VarDeclaration Name="{var.name}" Type="{self.convert_type_py_to_xml(var.type)}" Comment="{var.comment}"/>\n')
+        f.write('\t\t</InputVars>\n')
+        f.write('\t\t<OutputVars>\n')
+        for var in self.variables:
+            if var.is_output:
+                f.write(f'\t\t\t<VarDeclaration Name="{var.name}" Type="{self.convert_type_py_to_xml(var.type)}" Comment="{var.comment}"/>\n')
+        f.write('\t\t</OutputVars>\n')
+        f.write('\t</InterfaceList>\n')
+        f.write('\t<BasicFB>\n')
+        f.write('\t\t<ECC>\n')
+        for state in self.ecc.states:
+            if state.actions:
+                f.write(f'\t\t\t<ECState Comment="{state.comment}" Name="{state.name}" x="{state.x}" y="{state.y}">\n')
+                for action in state.actions:
+                    if action.output_event:
+                        f.write(f'\t\t\t\t<ECAction Algorithm="{action.algorithm.name}" Output="{action.output_event.name}"/>\n')  # It should be state.algorithm.name (missing name attr)
+                    else:
+                        f.write(f'\t\t\t\t<ECAction Algorithm="{action.algorithm.name}"/>\n')
+                f.write('\t\t\t</ECState>\n')  
+            else:
+                f.write(f'\t\t\t<ECState Comment="{state.comment}" Name="{state.name}" x="{state.x}" y="{state.y}"/>\n')
+
+        for transition in self.ecc.transitions:
+            f.write(f'\t\t\t<ECTransition Comment="{transition.comment}" Condition="{transition.convert_condition_xml()}" Destination="{transition.to_state.name}" Source="{transition.from_state.name}" x="{transition.x}" y="{transition.y}"/>\n')    
+        f.write('\t\t</ECC>\n')  
+        if self.algorithms:
+            for algo in self.algorithms:
+                f.write(f'\t\t<Algorithm Name="{algo.name}" Comment="{algo.comment}">\n')
+                f.write(f'\t\t\t<ST Text="{algo.algorithm_str}"/>\n')
+                f.write(f'\t\t</Algorithm>\n')  
+        f.write('\t</BasicFB>\n')
+        f.write('</FBType>\n')
+            
+        return True
                 
         

@@ -6,11 +6,9 @@ from gi.repository import GLib
 from .base import PageMixin
 
 
-@Gtk.Template(resource_path='/com/lapas/Fbe/dialog.ui')
 class SystemEditor(PageMixin, Gtk.Box):
     __gtype_name__ = 'SystemEditor'
     
-    dialog = Gtk.Template.Child()
     
     def __init__(self, window, project, system=None, current_tool=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -127,20 +125,7 @@ class SystemEditor(PageMixin, Gtk.Box):
         self.apps_listbox = Gtk.ListBox()
         self.apps_listbox.set_selection_mode(Gtk.SelectionMode.SINGLE)
         self.apps_vbox.append(self.apps_listbox)
-
-        for app in self.system.applications:
-            if app.subapp_network.function_blocks:
-                app_expander = Gtk.Expander(label=app.name, margin_start=4)
-                fb_listbox = Gtk.ListBox()
-                fb_listbox.set_show_separators(True)
-                fb_listbox.set_selection_mode(Gtk.SelectionMode.NONE)
-                app_expander.set_child(fb_listbox)
-                self.apps_listbox.append(app_expander)
-                for fb in app.subapp_network.function_blocks:
-                    self.add_row(fb_listbox, fb.name, 10)
-            else:
-                self.add_row(self.apps_listbox, app.name)
-                
+        self.build_application_list()
                 
         # ---------------- System Config ------------------- #
         
@@ -163,7 +148,7 @@ class SystemEditor(PageMixin, Gtk.Box):
                 self.add_row(self.sys_config_listbox, dev.name)
                 
                 
-        # ----------------------------------------- #
+        # -------------- Popover menu ---------------- #
         
         self._create_action('new-app', self.on_new_app)
         self._create_action('rename-app', self.on_rename_app)
@@ -182,12 +167,29 @@ class SystemEditor(PageMixin, Gtk.Box):
         self.click_on_app.connect("pressed", self.on_right_click_app)
         self.click_on_app.set_button(3)
         self.apps_expander.add_controller(self.click_on_app)
-       
         self.menu_button.set_popover(self.popover)
         self.menu_button.set_visible(False)
 
         self.apps_listbox.add_controller(gesture_click_applications)  # Add to the list box
         self.sys_config_listbox.add_controller(gesture_click_sys_device)  # Add to the list box                
+    
+    def build_application_list(self):
+        for app in self.system.applications:
+            if app.subapp_network.function_blocks:
+                app_expander = Gtk.Expander(label=app.name, margin_start=4)
+                fb_listbox = Gtk.ListBox()
+                fb_listbox.set_show_separators(True)
+                fb_listbox.set_selection_mode(Gtk.SelectionMode.NONE)
+                app_expander.set_child(fb_listbox)
+                self.apps_listbox.append(app_expander)
+                for fb in app.subapp_network.function_blocks:
+                    self.add_row(fb_listbox, fb.name, 10)
+            else:
+                self.add_row(self.apps_listbox, app.name)
+    
+    def update_application_list(self):
+        self.apps_listbox.remove_all()
+        self.build_application_list()
     
     def app_rename_dialog(self, label):
         dialog = Gtk.Dialog(title="Rename app", transient_for=self.window, halign=Gtk.Align.FILL, valign=Gtk.Align.FILL)

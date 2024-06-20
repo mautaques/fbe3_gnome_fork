@@ -5,9 +5,16 @@ from gi.repository import Gdk
 from .base import PageMixin
 from .fb_renderer import FunctionBlockRenderer
 from .ecc_editor import EccEditor
+import copy
 
-
+@Gtk.Template(resource_path='/com/lapas/Fbe/menu.ui')
 class FunctionBlockEditor(PageMixin, Gtk.Box):
+    __gtype_name__ = 'FunctionBlockEditor'
+    
+    fb_menu = Gtk.Template.Child()
+    mapping_menu = Gtk.Template.Child()
+    mapping_submenu = Gtk.Template.Child()
+    
     def __init__(self, app=None, fb_diagram=None, project=None, selected_fb=None, current_tool=None, window=None, inspected_block=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -48,24 +55,31 @@ class FunctionBlockEditor(PageMixin, Gtk.Box):
         self.scrolled.set_child(self.fb_render)
         self.fb_render.renderer_set_size_request(self.scrolled.get_allocation())
 
-        # self._create_action('map-res', self.on_map_resource)
-        self.menu = Gio.Menu()
-        self.menu.append('Map to', 'win.map-res')
-        self.popover = Gtk.PopoverMenu().new_from_model(self.menu)
-        self.popover.set_parent(self.fb_render)
-        self.popover.set_has_arrow(False)
-        self.popover.set_halign(Gtk.Align.START)
-        self.menu_button = Gtk.MenuButton()
-        self.sidebox.append(self.menu_button)
-        self.click_on_fb = Gtk.GestureClick.new()
-        self.click_on_fb.connect("pressed", self.on_right_click_app)
-        self.click_on_fb.set_button(3)
-        self.fb_render.add_controller(self.click_on_fb)
-
-        self.menu_button.set_popover(self.popover)
-        self.menu_button.set_visible(False)
-
-        self.build_treeview()
+        
+         # ---------- Make tool frame's border square ---------- #  
+        css_provider = Gtk.CssProvider()
+        css_provider.load_from_data(b".squared {border-radius: 0;}")
+        Gtk.StyleContext.add_provider_for_display(
+            Gdk.Display.get_default(),
+            css_provider,
+            Gtk.STYLE_PROVIDER_PRIORITY_USER
+        )
+        
+        # ---------------------------------------------------- #
+    
+        # self.sidebox.append(self.fb_menu)
+        # self.popover = Gtk.PopoverMenu().new_from_model(self.mapping_menu)
+        # self.popover.set_parent(self.fb_render)
+        # self.popover.set_has_arrow(False)
+        # self.popover.set_halign(Gtk.Align.START)
+        
+        # self.click_on_fb = Gtk.GestureClick.new()
+        # self.click_on_fb.connect("pressed", self.on_right_click_app)
+        # self.click_on_fb.set_button(3)
+        # self.fb_render.add_controller(self.click_on_fb)
+        
+        # self.fb_menu.set_popover(self.popover)
+        # self.fb_menu.set_visible(False)
 
         self.fb_render.set_draw_func(self.on_draw, None)
         
@@ -76,6 +90,7 @@ class FunctionBlockEditor(PageMixin, Gtk.Box):
         self.fb_render.add_controller(self.gesture_release)
         self.fb_render.add_controller(self.event_controller)
 
+        self.build_treeview()
 
     def build_treeview(self):
         self.events_liststore = Gtk.ListStore(str, bool, bool, object)
@@ -154,6 +169,26 @@ class FunctionBlockEditor(PageMixin, Gtk.Box):
         self.delete_button.connect('clicked', self.variable_remove)
         self.sidebox.append(self.delete_button)
 
+        self.map_frame = Gtk.Frame(vexpand=True)
+        self.map_frame.get_style_context().add_class("squared")
+        self.map_label = Gtk.Label(label="Map to", margin_top=2, margin_bottom=2)
+        self.map_label_frame = Gtk.Frame()
+        self.map_label_frame.set_child(self.map_label)
+        self.map_label_frame.get_style_context().add_class("squared")
+        self.map_list = Gtk.ListBox()
+        self.map_list.set_selection_mode(Gtk.SelectionMode.SINGLE)
+        self.map_list.set_show_separators(True)
+        self.build_mapping_list(self.map_list)
+        self.test_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.test_vbox.append(self.map_label_frame)
+        self.test_vbox.append(self.map_list)
+        self.map_frame.set_child(self.test_vbox)
+        self.sidebox.append(self.map_frame)
+        
+        self.map_button = Gtk.Button(label = "Map to resource")
+        self.map_button.connect('clicked', self.map_to_resource)
+        self.sidebox.append(self.map_button)
+
         if self.selected_fb is not None:
             self.update_treeview()
 
@@ -186,6 +221,50 @@ class FunctionBlockEditor(PageMixin, Gtk.Box):
         if cursor_path:
             self.events_treeview.set_cursor(cursor_path, cursor_focus_column, False)
             self.vars_treeview.set_cursor(cursor_path, cursor_focus_column, False)
+
+    def build_mapping_list(self, listbox):
+        system = self.project.system
+        for device in system.devices:
+            for resource in device.resources:
+                label = f'[{device.name}]{resource.name}'
+                self.add_row(listbox, label)
+
+    def add_row(self, listbox, label, margin=0):
+        row = Gtk.ListBoxRow()
+        label = Gtk.Label(label=label, halign=Gtk.Align.START, margin_start=5+margin, margin_end=5)
+        row.set_child(label)
+        listbox.append(row)
+        return row
+    
+    def map_to_resource(self, widget):
+        row = self.map_list.get_selected_row()
+        if row is not None:
+            label = row.get_child().get_label()
+            device_name, resource_name = self.extract_strings(label)
+            system = self.project.system
+            device = system.device_get(device_name)
+            resource = device.resource_get(resource_name)
+            source = (self.app, self.previous_selected)
+            destination = (device, resource, self.previous_selected)
+            system.mapping_add((source, destination))
+            fb_copy = copy.deepcopy(self.previous_selected)
+            fb_copy.connections.clear()
+            for variable in fb_copy.variables:
+                variable.connections.clear()
+            for event in fb_copy.events:
+                event.connections.clear()
+            resource.fb_network.add_function_block(fb_copy)
+    
+    def extract_strings(self, label):
+        start = label.find('[')
+        end = label.find(']')
+        
+        if start != -1 and end != -1:
+            inside_brackets = label[start+1:end]
+            outside_brackets = label[end+1:].strip()
+            return inside_brackets, outside_brackets
+        else:
+            return None, None
 
     def event_text_edited(self, widget, path, event_name):
         event = self.events_liststore[path][3]
@@ -292,7 +371,7 @@ class FunctionBlockEditor(PageMixin, Gtk.Box):
             self.window.add_action(action)  
 
     def on_right_click_app(self, gesture, n, x, y):
-        rect = self.menu_button.get_allocation()
+        rect = self.fb_menu.get_allocation()
         rect.width = 0
         rect.height = 0
         rect.x = x
@@ -337,6 +416,7 @@ class FunctionBlockEditor(PageMixin, Gtk.Box):
             self.fb_count = self.fb_count + 1
             self.update_treeview()
             self.trigger_change()
+            self.project.update_system_editor()
             self.selected_fb = None
             
         elif tool == 'connect':
@@ -367,7 +447,8 @@ class FunctionBlockEditor(PageMixin, Gtk.Box):
                 self.fb_count = self.fb_count - 1
             if self.fb_render.selected_connection is not None:
                 self.fb_render.selected_connection[0].connections.remove(self.fb_render.selected_connection[1])
-                
+            self.project.update_system_editor()
+            
         elif tool == 'inspect':
             self.selected_fb = fb
             fb_diagram = fb.get_fb_network()
@@ -399,6 +480,7 @@ class FunctionBlockEditor(PageMixin, Gtk.Box):
         if tool_name == 'move':
             self.update_scrolled_window()
             self.update_treeview()
+            self.previous_selected = self.selected_fb
             self.selected_fb = None
 
     def update_scrolled_window(self):

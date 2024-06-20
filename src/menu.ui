@@ -9,10 +9,7 @@
     <property name="menu-model">primary_menu</property>
   </object>
   <object class="GtkMenuButton" id="fb_menu">
-    <property name="primary">True</property>
-    <property name="direction">right</property>
-    <property name="tooltip-text" translatable="yes">Menu</property>
-    <property name="menu-model">primary_menu</property>
+    <property name="menu-model">mapping_menu</property>
   </object>
 
   <menu id="primary_menu">
@@ -21,12 +18,18 @@
         <attribute name="label" translatable="yes">_System Information</attribute>
         <attribute name="action">win.system-information</attribute>
       </item>
+      <submenu id="sys_config_submenu">
+        <attribute name="label">_System Configuration</attribute>
+      </submenu>
     </section>
-    <submenu id="sys_config_submenu">
-      <attribute name="label">_System Configuration</attribute>
-    </submenu>
     <submenu id="apps_submenu">
       <attribute name="label">_Apps</attribute>
+    </submenu>
+  </menu>
+
+  <menu id="mapping_menu">
+    <submenu id="mapping_submenu">
+      <attribute name="label">_Map to</attribute>
     </submenu>
   </menu>
 </interface>

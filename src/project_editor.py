@@ -23,7 +23,7 @@ class ProjectEditor(PageMixin, Gtk.Box):
         self.window = window
         self.system = system
         self.editor_index = 0
-        self.current_page = current_page  # Either a system editor or application editor
+        self.current_page = current_page 
         self.current_page_label = Gtk.Label()
         self.last_page = None
         self.last_page_label = None
@@ -41,13 +41,13 @@ class ProjectEditor(PageMixin, Gtk.Box):
         self.vpaned = Gtk.Paned(wide_handle=False, orientation = Gtk.Orientation.VERTICAL)
         self.vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         
-        self.vbox.set_vexpand(True)
         self.vpaned.set_start_child(self.project_bar)
         self.vpaned.set_resize_start_child(False)
         self.vpaned.set_end_child(self.current_page)
         self.vpaned.set_resize_end_child(True)
         self.vpaned.set_shrink_end_child(False)
         self.vbox.append(self.vpaned)
+        self.vbox.set_vexpand(True)
         self.vbox.set_hexpand(True)
         self.append(self.vbox)
         
@@ -58,7 +58,6 @@ class ProjectEditor(PageMixin, Gtk.Box):
         self._create_action("apps-swipe-left", self.on_apps_swipe_left)
         self._create_action("apps-swipe-right", self.on_apps_swipe_right)
         self._create_action("last-page", self.goto_last_page)
-        
         
         self.build_application_menu()
         self.build_system_config_menu()
@@ -89,6 +88,7 @@ class ProjectEditor(PageMixin, Gtk.Box):
             # label_action = label+"-dev"
             # self._create_action(label_action, self.on_application_editor)
             # self.sys_config_submenu.append(label, "win."+label_action)
+            print('')
     
     def update_system_config_menu(self):
         self.sys_config_submenu.remove_all()
@@ -175,6 +175,9 @@ class ProjectEditor(PageMixin, Gtk.Box):
             self.last_page = current_page
             self.last_page_label = current_page_label
             self.vpaned.set_end_child(self.current_page)
+            
+    def update_system_editor(self):
+        self.system_editor.update_application_list()
 
     def save_file_dialog(self, action, _):
         self._native = Gtk.FileChooserNative(
