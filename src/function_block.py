@@ -221,7 +221,7 @@ class State():
         action_str = ''
         for action in self.actions:
             action_str += action.__str__()
-        print(f'{self.name} = {action_str}')
+        # print(f'{self.name} = {action_str}')
 
 class Transition():
     def __init__(self, from_state, to_state, event=Event(), comment='', x=0.0, y=0.0, condition='', id=None, *args, **kwargs):
@@ -448,7 +448,7 @@ class FunctionBlock():
     def connection_add(self, source, destination):
         if self.is_connection_valid(source, destination):
             self.connections.append((source, destination))
-            print(str(source.__class__.__name__)+" "+str(source.name)+" connected with "+str(destination.__class__.__name__)+" "+str(destination.name))
+            # print(str(source.__class__.__name__)+" "+str(source.name)+" connected with "+str(destination.__class__.__name__)+" "+str(destination.name))
         else:
             print("invalid parameters for connection")
                 
@@ -569,7 +569,7 @@ class FunctionBlock():
     def __str_var__(self):
         for var in self.variables:
             put = "Input Var" if var.is_input else "Output Var"
-            print("Name:" + var.name + " -> " + put)
+            # print("Name:" + var.name + " -> " + put)
     
     # |------------------ ALGORITHM --------------------|
     
@@ -645,9 +645,9 @@ class FunctionBlock():
     def _str_service(self):
         if not self.service:
             return False
-        print("Comment= "+ self.service.comment + "\nInterfaces= " +str(self.service.interfaces))
+        # print("Comment= "+ self.service.comment + "\nInterfaces= " +str(self.service.interfaces))
         for seq in self.service.service_sequences.values():
-            print("\tName= " + seq.name + "\n\tComment= " + seq.comment)
+            # print("\tName= " + seq.name + "\n\tComment= " + seq.comment)
             for transaction in seq.service_transactions:
                 print("\tInput primitive" + str(transaction.input_primitive) + "\n\tOutput primitive" + str(transaction.output_primitive) +"\n")
             
@@ -992,7 +992,7 @@ class System():
         return app_names        
     
     def device_add(self, device):
-        print(f'device {device.name} added')
+        # print(f'device {device.name} added')
         self.devices.append(device)
     
     def device_get(self, name):

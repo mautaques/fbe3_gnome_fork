@@ -11,6 +11,9 @@
   <object class="GtkMenuButton" id="fb_menu">
     <property name="menu-model">mapping_menu</property>
   </object>
+  <object class="GtkPopoverMenuBar" id="popover_menubar">
+    <property name="menu-model">menubar</property>
+  </object>
 
   <menu id="primary_menu">
     <section>
@@ -31,5 +34,13 @@
     <submenu id="mapping_submenu">
       <attribute name="label">_Map to</attribute>
     </submenu>
+  </menu>
+
+  <menu id="menubar">
+    <section>
+      <item>
+        <attribute name="label" translatable="yes">_File</attribute>
+      </item>
+    </section>
   </menu>
 </interface>

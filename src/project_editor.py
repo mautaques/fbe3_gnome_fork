@@ -16,6 +16,7 @@ class ProjectEditor(PageMixin, Gtk.Box):
     primary_menu = Gtk.Template.Child()
     sys_config_submenu = Gtk.Template.Child()
     apps_submenu = Gtk.Template.Child()
+    popover_menubar = Gtk.Template.Child()
     
     def __init__(self, window, system=None, current_page=None, current_tool=None, system_editor=None, *args, **kwargs):
         super().__init__(*args, **kwargs)

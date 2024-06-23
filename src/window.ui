@@ -36,40 +36,8 @@
           <object class="GtkBox" id="vbox_window">
             <property name="orientation">vertical</property>
             <child>
-              <object class="GtkActionBar" id="action_bar">
-                <child type="start">
-                  <object class="GtkButton" id="new_fb_btn">
-                    <property name="child">
-                      <object class="AdwButtonContent">
-                        <property name="icon-name">new_fb</property>
-                        <property name="label" translatable="yes">_New Blank FB</property>
-                        <property name="use-underline">True</property>
-                      </object>
-                    </property>
-                  </object>
-                </child>
-                <child type="start">
-                  <object class="GtkButton" id="save_btn">
-                    <property name="child">
-                      <object class="AdwButtonContent">
-                        <property name="icon-name">save</property>
-                        <property name="label" translatable="yes">_Save</property>
-                        <property name="use-underline">True</property>
-                      </object>
-                    </property>
-                  </object>
-                </child>
-                <child type="start">
-                  <object class="GtkButton" id="save_as_btn">
-                    <property name="child">
-                      <object class="AdwButtonContent">
-                        <property name="icon-name">save_as</property>
-                        <property name="label" translatable="yes">_Save as</property>
-                        <property name="use-underline">True</property>
-                      </object>
-                    </property>
-                  </object>
-                </child>
+              <object class="GtkPopoverMenuBar">
+                <property name="menu-model">menu_bar</property>
               </object>
             </child>
             <child>
@@ -235,5 +203,15 @@
         <attribute name="action">app.quit</attribute>
       </item>
     </section>
+  </menu>
+  <menu id="menu_bar">
+    <submenu>
+      <attribute name="label">File</attribute>
+      <section>
+        <item>
+          <attribute name="label" translatable="yes">_File</attribute>
+        </item>
+      </section>
+    </submenu>
   </menu>
 </interface>
