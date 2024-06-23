@@ -26,7 +26,7 @@
                 <property name="primary">False</property>
                 <property name="icon-name">open-menu-symbolic</property>
                 <property name="tooltip-text" translatable="yes">Menu</property>
-                <property name="menu-model">second_menu</property>
+                <property name="menu-model">secondary_menu</property>
               </object>
             </child>
           </object>
@@ -35,11 +35,6 @@
         <property name="content">
           <object class="GtkBox" id="vbox_window">
             <property name="orientation">vertical</property>
-            <child>
-              <object class="GtkPopoverMenuBar">
-                <property name="menu-model">menu_bar</property>
-              </object>
-            </child>
             <child>
               <object class="GtkBox" id="hbox_window">
                 <property name="orientation">horizontal</property>
@@ -171,19 +166,7 @@
     </property>
   </template>
 
-  <menu id="primary_menu">
-    <section>
-      <item>
-        <attribute name="label" translatable="yes">_New Project</attribute>
-        <attribute name="action">win.new-project</attribute>
-      </item>
-      <item>
-        <attribute name="label" translatable="yes">_Open Project</attribute>
-        <attribute name="action">win.open-project</attribute>
-      </item>
-    </section>
-  </menu>
-  <menu id="second_menu">
+  <menu id="secondary_menu">
     <section>
       <item>
         <attribute name="label" translatable="yes">_Preferences</attribute>
@@ -204,14 +187,26 @@
       </item>
     </section>
   </menu>
-  <menu id="menu_bar">
-    <submenu>
-      <attribute name="label">File</attribute>
-      <section>
-        <item>
-          <attribute name="label" translatable="yes">_File</attribute>
-        </item>
-      </section>
-    </submenu>
+  <menu id="primary_menu">
+    <section>
+      <item>
+        <attribute name="label" translatable="yes">_New Project</attribute>
+        <attribute name="action">win.new-project</attribute>
+      </item>
+    </section>
+    <section>
+      <item>
+        <attribute name="label" translatable="yes">_Open Project...</attribute>
+        <attribute name="action">win.open-project</attribute>
+      </item>
+    </section>
+    <section>
+      <item>
+        <attribute name="label" translatable="yes">_Save</attribute>
+      </item>
+      <item>
+        <attribute name="label" translatable="yes">_Save as</attribute>
+      </item>
+    </section>
   </menu>
 </interface>

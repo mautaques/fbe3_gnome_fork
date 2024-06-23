@@ -43,7 +43,6 @@ class FbeWindow(Adw.ApplicationWindow):
     move_fb_btn = Gtk.Template.Child()
     remove_fb_btn = Gtk.Template.Child()
     edit_fb_btn = Gtk.Template.Child()
-    menu_bar = Gtk.Template.Child()
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -72,6 +71,7 @@ class FbeWindow(Adw.ApplicationWindow):
 
         # self.menu = Gtk.PopoverMenuBar().new_from_model(self.menubar)
         # self.vbox_window.append(self.menu)
+        self.selected_tool = None
         self.notebook.connect('create-window', self.on_notebookbook_create_window)
         self.notebook.connect('page-removed', self.on_notebookbook_page_removed)
         self.add_fb_btn.connect('clicked', self.add_fb_dialog)
