@@ -34,6 +34,7 @@ from .xmlParser import *
 class FbeWindow(Adw.ApplicationWindow):
     __gtype_name__ = 'FbeWindow'
 
+    vpaned = Gtk.Template.Child()
     vbox_window = Gtk.Template.Child()
     labels_box = Gtk.Template.Child()
     tool_frame = Gtk.Template.Child()
@@ -79,6 +80,90 @@ class FbeWindow(Adw.ApplicationWindow):
         self.connect_fb_btn.connect('clicked', self.connect_function_block)
         self.move_fb_btn.connect('clicked', self.move_function_block)
         self.remove_fb_btn.connect('clicked', self.remove_function_block)
+        
+        self.directory_list = Gtk.DirectoryList.new(
+            attributes=Gio.FILE_ATTRIBUTE_STANDARD_NAME,
+            file=Gio.File.new_for_path(".")
+        )
+
+        self.vbox_separator = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, margin_top=5)
+        
+        # Create a GtkSingleSelection model
+        self.selection_model = Gtk.SingleSelection.new(self.directory_list)
+
+        # Create a ListView to display the files
+        self.list_view = Gtk.ListView.new(model=self.selection_model, factory=self.create_list_factory())
+
+        self.scrolled_window = Gtk.ScrolledWindow(margin_top=5)
+        self.scrolled_window.set_child(self.list_view)
+        self.scrolled_window.set_min_content_width(190)
+        self.scrolled_window.set_vexpand(True)
+        
+        self.vbox_expander = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        
+        self.library_expander = Gtk.Expander(margin_top=10, margin_start=5, expanded=True)
+        self.library_expander.set_label("Import library")
+        self.library_expander.set_child(self.scrolled_window)
+        self.library_expander.set_vexpand(True)
+
+        self.choose_button = Gtk.Button(label="Load library")
+        self.choose_button.connect("clicked", self.on_choose_button_clicked)
+
+        self.refresh_button = Gtk.Button(label="Refresh library")
+        self.refresh_button.connect("clicked", self.on_refresh_button_clicked)
+        
+        self.vpaned.set_end_child(self.vbox_separator)
+        self.vbox_separator.append(self.vbox_expander)
+        self.vbox_separator.append(self.choose_button)      
+        self.vbox_separator.append(self.refresh_button)
+        self.vbox_expander.append(self.library_expander)
+
+        # Load initial files
+        self.load_files()
+
+    def create_list_factory(self):
+        factory = Gtk.SignalListItemFactory()
+        factory.connect("setup", self.on_factory_setup)
+        factory.connect("bind", self.on_factory_bind)
+        return factory
+
+    def load_files(self, directory="Projects/fbe3_gnome/src/models/fb_library/"):
+        directory = Gio.File.new_for_path(directory)
+        self.directory_list.set_file(directory)
+        
+    def on_choose_button_clicked(self, widget):
+        dialog = Gtk.FileChooserDialog(
+            title="Choose Directory",
+            parent=self,
+            action=Gtk.FileChooserAction.SELECT_FOLDER,
+        )
+        dialog.set_transient_for(self)
+        dialog.add_buttons(
+            "_Cancel", Gtk.ResponseType.CANCEL,
+            "_Open", Gtk.ResponseType.OK
+        )
+        dialog.connect("response", self.on_file_dialog_response)
+        dialog.show()
+
+    def on_file_dialog_response(self, dialog, response):
+        if response == Gtk.ResponseType.OK:
+            selected_folder = dialog.get_file().get_path()
+            self.load_files(selected_folder)
+        dialog.destroy()
+
+    def on_refresh_button_clicked(self, widget):
+        self.load_files()
+
+    def on_factory_setup(self, factory, list_item):
+        label = Gtk.Label()
+        list_item.set_child(label)
+
+    def on_factory_bind(self, factory, list_item):
+        file_info = list_item.get_item()
+        label = list_item.get_child()
+        if file_info:
+            label.set_text(file_info.get_name())
+        
 
     def new_file_dialog(self, action, param=None):
         self.notebook.set_visible(True)

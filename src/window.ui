@@ -42,62 +42,74 @@
                   <object class="GtkFrame" id="tool_frame">
                     <property name="vexpand">true</property>
                     <property name="label-xalign">0.5</property>
+                    <property name="width-request">200</property>
                     <child type="label">
                       <object class="GtkLabel" id="frame_label">
                         <property name="label">Editor Workspace</property>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkBox" id="hbox_buttons">
-                        <property name="orientation">horizontal</property>
-                        <property name="spacing">8</property>
-                        <property name="margin-start">20</property>
-                        <property name="margin-end">20</property>
-                        <property name="margin-top">8</property>
-                        <child>
-                          <object class="GtkBox" id="vbox1_btn">
-                            <property name="orientation">vertical</property>
-                            <property name="homogeneous">false</property>
+                      <object class="GtkPaned" id="vpaned">
+                        <property name="orientation">vertical</property>
+                        <property name="wide-handle">false</property>
+                        <property name="shrink-start-child">false</property>
+                        <property name="resize-start-child">false</property>
+                        <property name="shrink-end-child">false</property>
+                        <property name="resize-end-child">true</property>
+                        <child type="start">                     
+                          <object class="GtkBox" id="hbox_buttons">
+                            <property name="orientation">horizontal</property>
+                            <property name="spacing">8</property>
+                            <property name="margin-start">20</property>
+                            <property name="margin-end">20</property>
+                            <property name="margin-top">8</property>
+                            <property name="homogeneous">true</property>
                             <child>
-                              <object class="GtkButton" id="add_fb_btn">
-                                <property name="icon-name">add</property>
-                                <property name="has-frame">false</property>
+                              <object class="GtkBox" id="vbox1_btn">
+                                <property name="orientation">vertical</property>
+                                <property name="homogeneous">false</property>
+                                <child>
+                                  <object class="GtkButton" id="add_fb_btn">
+                                    <property name="icon-name">add</property>
+                                    <property name="has-frame">false</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkButton" id="connect_fb_btn">
+                                    <property name="icon-name">connect</property>
+                                    <property name="has-frame">false</property>
+                                  </object>
+                                </child>
                               </object>
                             </child>
                             <child>
-                              <object class="GtkButton" id="connect_fb_btn">
-                                <property name="icon-name">connect</property>
-                                <property name="has-frame">false</property>
+                              <object class="GtkBox" id="vbox2_btn">
+                                <property name="orientation">vertical</property>
+                                <property name="homogeneous">false</property>
+                                <child>
+                                  <object class="GtkButton" id="move_fb_btn">
+                                    <property name="icon-name">move</property>
+                                    <property name="has-frame">false</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkButton" id="remove_fb_btn">
+                                    <property name="icon-name">delete</property>
+                                    <property name="has-frame">false</property>
+                                  </object>
+                                </child>
                               </object>
                             </child>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkBox" id="vbox2_btn">
-                            <property name="orientation">vertical</property>
-                            <property name="homogeneous">false</property>
                             <child>
-                              <object class="GtkButton" id="move_fb_btn">
-                                <property name="icon-name">move</property>
-                                <property name="has-frame">false</property>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkButton" id="remove_fb_btn">
-                                <property name="icon-name">delete</property>
-                                <property name="has-frame">false</property>
-                              </object>
-                            </child>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkBox" id="vbox3_btn">
-                            <property name="orientation">vertical</property>
-                            <property name="homogeneous">false</property>
-                            <child>
-                              <object class="GtkButton" id="edit_fb_btn">
-                                <property name="icon-name">inspect_fb</property>
-                                <property name="has-frame">false</property>
+                              <object class="GtkBox" id="vbox3_btn">
+                                <property name="orientation">vertical</property>
+                                <property name="homogeneous">false</property>
+                                <child>
+                                  <object class="GtkButton" id="edit_fb_btn">
+                                    <property name="icon-name">inspect_fb</property>
+                                    <property name="has-frame">false</property>
+                                  </object>
+                                </child>
                               </object>
                             </child>
                           </object>
