@@ -40,7 +40,8 @@ fbe_sources = [
   'system_editor.py',
   'project_editor.py',
   'system_config_editor.py',
-  'system_renderer.py'
+  'system_renderer.py',
+  'export.py'
 ]
 
 install_data(fbe_sources, install_dir: moduledir)

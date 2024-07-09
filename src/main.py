@@ -53,7 +53,7 @@ class FbeApplication(Adw.Application):
         self.set_accels_for_action('win.save-as', ['<Ctrl><Alt>s'])
         self.set_accels_for_action('win.add-type', ['<Ctrl><Alt>n'])
         self.set_accels_for_action('win.last-page', ['<Ctrl>b'])
-
+        self.set_accels_for_action('win.export-project', ['<Ctrl>e'])
 
         print(cur_path)
 

@@ -1,12 +1,12 @@
 from gi.repository import Adw
 from gi.repository import Gtk
 from gi.repository import Gio
-from gi.repository import Gdk
 from gi.repository import GLib
 from .base import PageMixin
 from .system_editor import SystemEditor
 from .system_config_editor import SystemConfigEditor
 from .fb_editor import FunctionBlockEditor
+from .export import ExportWindow
 
 @Gtk.Template(resource_path='/com/lapas/Fbe/menu.ui')
 class ProjectEditor(PageMixin, Gtk.Box):
@@ -54,6 +54,7 @@ class ProjectEditor(PageMixin, Gtk.Box):
         
         self.project_menu_button.set_label('THIS PROJECT')
         
+        self._create_action("export-project", self.on_export_project)
         self._create_action("system-information", self.on_system_information)
         self._create_action("system-configuration", self.on_system_configuration)
         self._create_action("apps-swipe-left", self.on_apps_swipe_left)
@@ -177,6 +178,13 @@ class ProjectEditor(PageMixin, Gtk.Box):
             self.last_page_label = current_page_label
             self.vpaned.set_end_child(self.current_page)
             
+    def on_export_project(self, action, param=None):
+        self.last_page = self.current_page
+        self.last_page_label = self.current_page_label.get_label()
+        self.current_page = ExportWindow(self.system, self.window)
+        self.current_page_label.set_label("Export project")
+        self.vpaned.set_end_child(self.current_page)
+        
     def update_system_editor(self):
         self.system_editor.update_application_list()
 

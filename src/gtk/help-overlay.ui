@@ -62,6 +62,12 @@
                 <property name="action-name">win.save-as</property>
               </object>
             </child>
+            <child>
+              <object class="GtkShortcutsShortcut">
+                <property name="title" translatable="yes" context="shortcut window">Export project</property>
+                <property name="action-name">win.export-project</property>
+              </object>
+            </child>
           </object>
         </child>
         <child>

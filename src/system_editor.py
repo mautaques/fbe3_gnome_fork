@@ -2,7 +2,6 @@ from gi.repository import Adw
 from gi.repository import Gtk
 from gi.repository import Gio
 from gi.repository import Gdk
-from gi.repository import GLib
 from .base import PageMixin
 
 

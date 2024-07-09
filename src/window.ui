@@ -220,5 +220,11 @@
         <attribute name="label" translatable="yes">_Save as</attribute>
       </item>
     </section>
+    <section>
+      <item>
+        <attribute name="label" translatable="yes">_Export</attribute>
+        <attribute name="action">win.export-project</attribute>
+      </item>
+    </section>
   </menu>
 </interface>

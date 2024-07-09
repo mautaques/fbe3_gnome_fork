@@ -118,7 +118,6 @@ class FbeWindow(Adw.ApplicationWindow):
         self.vbox_separator.append(self.refresh_button)
         self.vbox_expander.append(self.library_expander)
 
-        # Load initial files
         self.load_files()
 
     def create_list_factory(self):
