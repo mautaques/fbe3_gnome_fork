@@ -111,6 +111,9 @@ class FbeWindow(Adw.ApplicationWindow):
 
         self.refresh_button = Gtk.Button(label="Refresh library")
         self.refresh_button.connect("clicked", self.on_refresh_button_clicked)
+
+        self.add_library_fb_btn = Gtk.Button(label="Add function block")
+        self.add_library_fb_btn.connect("clicked", self.on_refresh_button_clicked)
         
         self.vpaned.set_end_child(self.vbox_separator)
         self.vbox_separator.append(self.vbox_expander)
@@ -250,6 +253,9 @@ class FbeWindow(Adw.ApplicationWindow):
         native = Gtk.FileDialog()
         native.set_filters(filters)
         native.open(self, None, self.on_add_response)
+
+    def on_add_library_fb(self, action, param=None):
+        pass
 
     def on_add_response(self, dialog, result):
         self.selected_tool = 'add'
