@@ -14,7 +14,7 @@ class ExportWindow(Gtk.Box, PageMixin):
         self.current_selected_row = None
         
         self.vbox_left = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, vexpand=True, width_request=400)   
-        self.vbox_middle = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, vexpand=True, width_request=100, valign=Gtk.Align.CENTER)   
+        self.vbox_middle = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, vexpand=True, width_request=70, valign=Gtk.Align.CENTER)   
         self.vbox_right = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, vexpand=True, width_request=400)
     
         self.set_vexpand(True)
@@ -109,9 +109,9 @@ class ExportWindow(Gtk.Box, PageMixin):
         
         self.system_listbox.connect("row-selected", self.on_row_selected)
         
-        self.build_application_list()
+        self.build_system_list()
         
-    def build_application_list(self):
+    def build_system_list(self):
         self.app_listbox = Gtk.ListBox()
         self.app_listbox.set_selection_mode(Gtk.SelectionMode.SINGLE)
         self.app_listbox.connect("row-selected", self.on_row_selected)
@@ -119,7 +119,7 @@ class ExportWindow(Gtk.Box, PageMixin):
         self.system_box.append(self.system_listbox)
         for app in self.system.applications:
             if app.subapp_network.function_blocks:
-                app_expander = Gtk.Expander(label=app.name, margin_start=4)
+                app_expander = Gtk.Expander(label=app.name)
                 fb_listbox = Gtk.ListBox()
                 fb_listbox.set_selection_mode(Gtk.SelectionMode.SINGLE)
                 fb_listbox.connect("row-selected", self.on_row_selected)
@@ -129,6 +129,18 @@ class ExportWindow(Gtk.Box, PageMixin):
                     self.add_row(fb_listbox, fb.name, 10)
             else:
                 self.add_row(self.app_listbox, app.name)
+        for dev in self.system.devices:
+            if dev.resources:
+                dev_expander = Gtk.Expander(label=dev.name)
+                device_listbox = Gtk.ListBox()
+                device_listbox.set_selection_mode(Gtk.SelectionMode.SINGLE)
+                device_listbox.connect("row-selected", self.on_row_selected)
+                dev_expander.set_child(device_listbox)
+                self.app_listbox.append(dev_expander)
+                for res in dev.resources:
+                    self.add_row(device_listbox, res.name)
+            else:
+                self.add_row(self.app_listbox, dev.name)
                     
     def on_row_selected(self, listbox, row):
         if row is not None:
