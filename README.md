@@ -30,5 +30,3 @@ An application for modelling function blocks based on IEC 61499.
  3. Open Builder then add the FBE project.
  4. Open the project
  5. Run project (Shift+Ctrl+Space)
-
-
