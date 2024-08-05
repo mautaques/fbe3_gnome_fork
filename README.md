@@ -18,7 +18,7 @@ How to install Builder:
 
 To run FBE:
  1. Clone the FBE repository
-    '''git clone https://github.com/cabralbonin/fbe3_gnome.git'''
+    ```git clone https://github.com/cabralbonin/fbe3_gnome.git``
  2. Open Builder and then open FBE project
  3. Run project (Shift+Ctrl+Space)
 
