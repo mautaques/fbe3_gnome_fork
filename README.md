@@ -1,13 +1,13 @@
  # Function Block Editor
 
-An application for modelling function blocks based on IEC 61499.
+An application for modelling function blocks based on IEC 61499. 
 
 ## Requirements:
  - Python3
  - GNOME Builder (Available only for LINUX)
  - Flatpak (Required for installing GNOME Builder)
 
-How to install Builder:
+**How to install Builder:**
  1. Install Flatpak:
     ```
     sudo apt install flatpak
