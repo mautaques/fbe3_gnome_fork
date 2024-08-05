@@ -1,4 +1,4 @@
-# Function Block Editor
+ # Function Block Editor
 
 An application for modelling function blocks based on IEC 61499.
 
@@ -9,12 +9,18 @@ Requirements:
 
 How to install Builder:
  1. Install Flatpak:
-    '''sudo apt install flatpak'''
- 2. Add the flathub repository:
-    '''flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo'''
- 3. Restart your system
- 4. Install GNOME Builder:
-    '''flatpak install flathub org.gnome.Builder'''
+    ```
+    sudo apt install flatpak
+    ```
+ 3. Add the flathub repository:
+    ```
+    flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+    ```
+ 4. Restart your system
+ 5. Install GNOME Builder:
+    ```
+    flatpak install flathub org.gnome.Builder
+    ```
 
 To run FBE:
  1. Clone the FBE repository:
