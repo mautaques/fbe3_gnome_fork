@@ -2,7 +2,7 @@
 
 An application for modelling function blocks based on IEC 61499.
 
-Requirements:
+## Requirements:
  - Python3
  - GNOME Builder (Available only for LINUX)
  - Flatpak (Required for installing GNOME Builder)
@@ -22,11 +22,12 @@ How to install Builder:
     flatpak install flathub org.gnome.Builder
     ```
 
-To run FBE:
+## To run FBE:
  1. Clone the FBE repository:
     ```
     git clone https://github.com/cabralbonin/fbe3_gnome.git
     ```
- 3. Open Builder and then open FBE project
- 4. Run project (Shift+Ctrl+Space)
+ 3. Open Builder then add the FBE project.
+ 4. Open the project
+ 5. Run project (Shift+Ctrl+Space)
 
