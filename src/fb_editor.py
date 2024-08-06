@@ -194,13 +194,18 @@ class FunctionBlockEditor(PageMixin, Gtk.Box):
 
     def update_treeview(self):
         cursor_path, cursor_focus_column = self.events_treeview.get_cursor()
+        current_fb = None
+        if self.selected_fb is None:
+            current_fb = self.previous_selected
+        else:
+            current_fb = self.selected_fb
 
         self.events_liststore.clear()
         self.vars_liststore.clear()
         events_rows = list()
         vars_rows = list()
 
-        for event in self.selected_fb.events:
+        for event in current_fb.events:
             events_rows.append([event.name, event.active, event.is_input, event])
 
         events_rows.sort(key=lambda row: row[0])
@@ -210,7 +215,7 @@ class FunctionBlockEditor(PageMixin, Gtk.Box):
 
         cursor_path, cursor_focus_column = self.vars_treeview.get_cursor()
 
-        for var in self.selected_fb.variables:
+        for var in current_fb.variables:
             vars_rows.append([var.name, var.is_input, var.type, var])
 
         vars_rows.sort(key=lambda row: row[0])
@@ -268,7 +273,7 @@ class FunctionBlockEditor(PageMixin, Gtk.Box):
 
     def event_text_edited(self, widget, path, event_name):
         event = self.events_liststore[path][3]
-        self.selected_fb.event_rename(event, event_name)
+        self.previous_selected.event_rename(event, event_name)
         self.update_treeview()
         self.trigger_change()
 
@@ -286,7 +291,7 @@ class FunctionBlockEditor(PageMixin, Gtk.Box):
         self.trigger_change()
 
     def event_add(self, widget):
-        self.selected_fb.event_add(name="new_Event")
+        self.previous_selected.event_add(name="new_Event")
         self.update_treeview()
         self.trigger_change()
 
@@ -295,13 +300,13 @@ class FunctionBlockEditor(PageMixin, Gtk.Box):
         for tree_path in tree_path_list:
             tree_iter = self.events_liststore.get_iter(tree_path)
             event = self.events_liststore.get(tree_iter, 3)[0]
-            self.selected_fb.event_remove(event)
+            self.previous_selected.event_remove(event)
         self.update_treeview()
         self.trigger_change()
 
     def variable_text_edited(self, widget, path, var_name):
         var = self.vars_liststore[path][3]
-        self.selected_fb.variable_rename(var, var_name)
+        self.previous_selected.variable_rename(var, var_name)
         self.update_treeview()
         self.trigger_change()
 
@@ -315,12 +320,12 @@ class FunctionBlockEditor(PageMixin, Gtk.Box):
 
     def variable_text_type(self, widget, path, type_name):
         var = self.vars_liststore[path][3]
-        self.selected_fb.variable_type_rename(var, type_name)
+        self.previous_selected.variable_type_rename(var, type_name)
         self.update_treeview()
         self.trigger_change()
 
     def variable_add(self, widget):
-        self.selected_fb.variable_add(name="new_Var", fb=self.selected_fb)
+        self.previous_selected.variable_add(name="new_Var", fb=self.previous_selected)
         self.update_treeview()
         self.fb_render.queue_draw()
         self.trigger_change()
@@ -330,7 +335,7 @@ class FunctionBlockEditor(PageMixin, Gtk.Box):
         for tree_path in tree_path_list:
             tree_iter = self.vars_liststore.get_iter(tree_path)
             var = self.vars_liststore.get(tree_iter, 3)[0]
-            self.selected_fb.variable_remove(var)
+            self.previous_selected.variable_remove(var)
         self.update_treeview()
         self.trigger_change()
 
@@ -404,7 +409,8 @@ class FunctionBlockEditor(PageMixin, Gtk.Box):
     def button_press(self, e, data, x, y):
         window = self.get_ancestor_window()
         tool = window.get_selected_tool()
-        fb = self.fb_render.get_fb_at(x, y)
+        if tool != 'add':
+            fb = self.fb_render.get_fb_at(x, y)
         #if fb is not None:
             #print(fb.name)
 

@@ -42,6 +42,8 @@ class ExportWindow(Gtk.Box, PageMixin):
             Gtk.STYLE_PROVIDER_PRIORITY_USER
         )
         
+        self.elements.append(self.system)
+        
         # ----------------------- Sytem box --------------------- #
         
         self.system_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, margin_start=10, margin_top=10, margin_end=10, margin_bottom=10)
@@ -187,13 +189,13 @@ class ExportWindow(Gtk.Box, PageMixin):
         self.selected_path_text.set_buffer(self.path_buffer)
         
     def on_export_right_button(self, widget):
-        print(f'row selected {self.current_selected_row}')
         self.add_row(self.export_listbox, self.current_selected_row, -5)
         self.export_list.append(self.current_selected_row)
         
     def on_export_left_button(self, widget):
        row = self.export_listbox.get_selected_row()
        self.export_listbox.remove(row)
+       self.export_list.remove(self.current_selected_row)
        
     def on_export_button(self, widget):
         path = self.path_buffer.get_text()
@@ -201,6 +203,5 @@ class ExportWindow(Gtk.Box, PageMixin):
             for elem in self.elements:
                 if elem.name == element:
                     elem.save(path)
-        self.system.save(path)
-    
+
     

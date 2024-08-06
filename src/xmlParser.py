@@ -20,11 +20,30 @@ def convert_xml_basic_fb(xml):
         FB = FunctionBlock(name=fb_name, comment=fb_comment, type=fb_name)
         ECC = FB.get_ecc()
         
+    for read in root.iter("Identification"):
+        standard = read.get("Standard")
+        classification = read.get("Classification")
+        app_domain = read.get("ApplicationDomain")
+        function = read.get("Function")
+        type = read.get("Type")
+        description = read.get("Description")
+        identification = Identification(standard, classification, app_domain, function, type, description)
+        FB.identification = identification
+    
+    for read in root.iter("VersionInfo"):
+        version = read.get("Version")
+        organization = read.get("Organization")
+        author = read.get("Author")
+        date = read.get("Date")
+        remarks = read.get("Remarks")
+        version_info = VersionInfo(version, organization, author, date, remarks)
+        FB.version_info = version_info
 
     for read in root.iter("EventInputs"):
         for read_1 in read.iter("Event"):	
             name = read_1.get("Name")
-            FB.event_add(name, is_input=True, fb=FB)
+            comment = read_1.get("Comment")
+            FB.event_add(name, comment=comment, is_input=True, fb=FB)
             for read_2 in read_1.iter("With"):
                 event = FB.event_get(name)
                 event.variable_add(read_2.get("Var")) # Add var name to event's var list
@@ -32,7 +51,8 @@ def convert_xml_basic_fb(xml):
     for read in root.iter("EventOutputs"):
         for read_1 in read.iter("Event"):	
             name = read_1.get("Name")
-            FB.event_add(name, is_input=False, fb=FB)
+            comment = read_1.get("Comment")
+            FB.event_add(name, comment=comment, is_input=False, fb=FB)
             for read_2 in read_1.iter("With"):
                 event = FB.event_get(name)
                 event.variable_add(read_2.get("Var")) # Add var to event's var list
@@ -80,6 +100,7 @@ def convert_xml_basic_fb(xml):
                 var_source = FB.variable_get(con.get("Source"))              
                            
             fb_diagram.connect_variables(var_source, var_destination, False)
+            fb_diagram.event_connection_add(fb_source, var_source, fb_destination, var_destination)
             
     for read in root.iter("EventConnections"):
         for con in read.iter("Connection"):
@@ -96,9 +117,12 @@ def convert_xml_basic_fb(xml):
                 event_source = FB.event_get(con.get("Source"))            
             
             if event_source.fb.fb_network is not None or event_destination.fb.fb_network is not None:
-                fb_diagram.connect_events(event_source, event_destination, False)                
+                fb_diagram.connect_events(event_source, event_destination, False)  
+                fb_diagram.event_connection_add(fb_source, event_source, fb_destination, event_destination)              
             else:
                 fb_diagram.connect_events(event_source, event_destination, True) 
+                fb_diagram.event_connection_add(fb_source, event_source, fb_destination, event_destination)
+            
             
     for read in root.iter("ECState"):
         name = read.get("Name")
