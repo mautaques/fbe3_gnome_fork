@@ -427,9 +427,10 @@ def convert_xml_system(xml):
                         
                     if fb_source is not None and fb_destination is not None and (fb_source.fb_network is not None or fb_destination.fb_network is not None):
                         fb_diagram.connect_events(event_source, event_destination, False)
+                        fb_diagram.event_connection_add(fb_source, event_source, fb_destination, event_destination)
                     elif fb_source is not None and fb_destination is not None:
                         fb_diagram.connect_events(event_source, event_destination, True)
-                        
+                        fb_diagram.event_connection_add(fb_source, event_source, fb_destination, event_destination)
             
             for read_2 in read_1.iter("DataConnections"):
                 for con in read_2.iter("Connection"):
@@ -443,9 +444,11 @@ def convert_xml_system(xml):
                                 
                     if fb_source is not None and fb_destination is not None and (fb_source.fb_network is not None or fb_destination.fb_network is not None):
                         fb_diagram.connect_variables(var_source, var_destination, False)
+                        fb_diagram.variable_connection_add(fb_source, event_source, fb_destination, event_destination)
                     elif fb_source is not None and fb_destination is not None:
                         fb_diagram.connect_variables(var_source, var_destination, True)
-            
+                        fb_diagram.variable_connection_add(fb_source, var_source, fb_destination, var_destination)
+                    
             app.subapp_network = fb_diagram 
             
         SYSTEM.application_add(app)

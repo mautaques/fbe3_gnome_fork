@@ -699,76 +699,77 @@ class FunctionBlock():
     # ------------------------------------------------------------- #         
         
     def save(self, file_path_name=None):
-        if file_path_name is None:
-            if self._file_path_name is None:
-                return False
-            file_path_name = self._file_path_name
-        else:
-            self.set_file_path_name(file_path_name)
+        print('not implemented')
+        # if file_path_name is None:
+        #     if self._file_path_name is None:
+        #         return False
+        #     file_path_name = self._file_path_name
+        # else:
+        #     self.set_file_path_name(file_path_name)
         
-        f = open(file_path_name, 'w')
-        f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
-        f.write(f'<FBType Name="{self.name}" Comment="{self.comment}">\n')
-        f.write('\t<Identification Standard=""/>\n')
-        f.write(f'\t<VersionInfo Version="" Author="AUTHOR" Date="{datetime.date.today()}"/>\n')
-        f.write('\t<InterfaceList>\n')
-        f.write('\t\t<EventInputs>\n')
-        for event in self.events:
-            if event.is_input:
-                if event.variables:
-                    f.write(f'\t\t\t<Event Name="{event.name}" Type="Event" Comment="{event.comment}">\n')
-                    for var in event.variables:
-                        f.write(f'\t\t\t\t<With Var="{var.name}"/>\n')
-                    f.write('\t\t\t</Event>\n')
-                else:
-                    f.write(f'\t\t\t<Event Name="{event.name}" Type="Event" Comment="{event.comment}"/>\n')
+        # f = open(file_path_name, 'w')
+        # f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+        # f.write(f'<FBType Name="{self.name}" Comment="{self.comment}">\n')
+        # f.write('\t<Identification Standard=""/>\n')
+        # f.write(f'\t<VersionInfo Version="" Author="AUTHOR" Date="{datetime.date.today()}"/>\n')
+        # f.write('\t<InterfaceList>\n')
+        # f.write('\t\t<EventInputs>\n')
+        # for event in self.events:
+        #     if event.is_input:
+        #         if event.variables:
+        #             f.write(f'\t\t\t<Event Name="{event.name}" Type="Event" Comment="{event.comment}">\n')
+        #             for var in event.variables:
+        #                 f.write(f'\t\t\t\t<With Var="{var.name}"/>\n')
+        #             f.write('\t\t\t</Event>\n')
+        #         else:
+        #             f.write(f'\t\t\t<Event Name="{event.name}" Type="Event" Comment="{event.comment}"/>\n')
 
-        f.write('\t\t</EventInputs>\n')
-        f.write('\t\t<EventOutputs>\n')
-        for event in self.events:
-            if not event.is_input:
-                f.write(f'\t\t\t<Event Name="{event.name}" Type="Event" Comment="{event.comment}">\n')
-                for var in event.variables:
-                    f.write(f'\t\t\t\t<With Var="{var.name}"/>\n')
-                f.write('\t\t\t</Event>\n')
-        f.write('\t\t</EventOutputs>\n')
-        f.write('\t\t<InputVars>\n')
-        for var in self.variables:
-            if var.is_input:
-                f.write(f'\t\t\t<VarDeclaration Name="{var.name}" Type="{self.convert_type_py_to_xml(var.type)}" Comment="{var.comment}"/>\n')
-        f.write('\t\t</InputVars>\n')
-        f.write('\t\t<OutputVars>\n')
-        for var in self.variables:
-            if var.is_output:
-                f.write(f'\t\t\t<VarDeclaration Name="{var.name}" Type="{self.convert_type_py_to_xml(var.type)}" Comment="{var.comment}"/>\n')
-        f.write('\t\t</OutputVars>\n')
-        f.write('\t</InterfaceList>\n')
-        f.write('\t<BasicFB>\n')
-        f.write('\t\t<ECC>\n')
-        for state in self.ecc.states:
-            if state.actions:
-                f.write(f'\t\t\t<ECState Comment="{state.comment}" Name="{state.name}" x="{state.x}" y="{state.y}">\n')
-                for action in state.actions:
-                    if action.output_event:
-                        f.write(f'\t\t\t\t<ECAction Algorithm="{action.algorithm.name}" Output="{action.output_event.name}"/>\n')  # It should be state.algorithm.name (missing name attr)
-                    else:
-                        f.write(f'\t\t\t\t<ECAction Algorithm="{action.algorithm.name}"/>\n')
-                f.write('\t\t\t</ECState>\n')  
-            else:
-                f.write(f'\t\t\t<ECState Comment="{state.comment}" Name="{state.name}" x="{state.x}" y="{state.y}"/>\n')
+        # f.write('\t\t</EventInputs>\n')
+        # f.write('\t\t<EventOutputs>\n')
+        # for event in self.events:
+        #     if not event.is_input:
+        #         f.write(f'\t\t\t<Event Name="{event.name}" Type="Event" Comment="{event.comment}">\n')
+        #         for var in event.variables:
+        #             f.write(f'\t\t\t\t<With Var="{var.name}"/>\n')
+        #         f.write('\t\t\t</Event>\n')
+        # f.write('\t\t</EventOutputs>\n')
+        # f.write('\t\t<InputVars>\n')
+        # for var in self.variables:
+        #     if var.is_input:
+        #         f.write(f'\t\t\t<VarDeclaration Name="{var.name}" Type="{self.convert_type_py_to_xml(var.type)}" Comment="{var.comment}"/>\n')
+        # f.write('\t\t</InputVars>\n')
+        # f.write('\t\t<OutputVars>\n')
+        # for var in self.variables:
+        #     if var.is_output:
+        #         f.write(f'\t\t\t<VarDeclaration Name="{var.name}" Type="{self.convert_type_py_to_xml(var.type)}" Comment="{var.comment}"/>\n')
+        # f.write('\t\t</OutputVars>\n')
+        # f.write('\t</InterfaceList>\n')
+        # f.write('\t<BasicFB>\n')
+        # f.write('\t\t<ECC>\n')
+        # for state in self.ecc.states:
+        #     if state.actions:
+        #         f.write(f'\t\t\t<ECState Comment="{state.comment}" Name="{state.name}" x="{state.x}" y="{state.y}">\n')
+        #         for action in state.actions:
+        #             if action.output_event:
+        #                 f.write(f'\t\t\t\t<ECAction Algorithm="{action.algorithm.name}" Output="{action.output_event.name}"/>\n')  # It should be state.algorithm.name (missing name attr)
+        #             else:
+        #                 f.write(f'\t\t\t\t<ECAction Algorithm="{action.algorithm.name}"/>\n')
+        #         f.write('\t\t\t</ECState>\n')  
+        #     else:
+        #         f.write(f'\t\t\t<ECState Comment="{state.comment}" Name="{state.name}" x="{state.x}" y="{state.y}"/>\n')
 
-        for transition in self.ecc.transitions:
-            f.write(f'\t\t\t<ECTransition Comment="{transition.comment}" Condition="{transition.convert_condition_xml()}" Destination="{transition.to_state.name}" Source="{transition.from_state.name}" x="{transition.x}" y="{transition.y}"/>\n')    
-        f.write('\t\t</ECC>\n')  
-        if self.algorithms:
-            for algo in self.algorithms:
-                f.write(f'\t\t<Algorithm Name="{algo.name}" Comment="{algo.comment}">\n')
-                f.write(f'\t\t\t<ST Text="{algo.algorithm_str}"/>\n')
-                f.write(f'\t\t</Algorithm>\n')  
-        f.write('\t</BasicFB>\n')
-        f.write('</FBType>\n')
+        # for transition in self.ecc.transitions:
+        #     f.write(f'\t\t\t<ECTransition Comment="{transition.comment}" Condition="{transition.convert_condition_xml()}" Destination="{transition.to_state.name}" Source="{transition.from_state.name}" x="{transition.x}" y="{transition.y}"/>\n')    
+        # f.write('\t\t</ECC>\n')  
+        # if self.algorithms:
+        #     for algo in self.algorithms:
+        #         f.write(f'\t\t<Algorithm Name="{algo.name}" Comment="{algo.comment}">\n')
+        #         f.write(f'\t\t\t<ST Text="{algo.algorithm_str}"/>\n')
+        #         f.write(f'\t\t</Algorithm>\n')  
+        # f.write('\t</BasicFB>\n')
+        # f.write('</FBType>\n')
             
-        return True
+        # return True
     
 class Service():
     def __init__(self, interfaces=(None, None), comment='', *args, **kwargs):
@@ -799,6 +800,8 @@ class ServiceTransaction():
 class Composite():
     def __init__(self):
         self.function_blocks = list()
+        self.event_connections = list()  # A list of tuples: {((FB_A, IN1), (FB_B, OUT1))}
+        self.variable_connections = list()
         
     def get_fb(self, fb_name):
         for fb in self.function_blocks:
@@ -820,6 +823,12 @@ class Composite():
                     if connection in fb.variables:
                         var.connections.remove(connection)
         self.function_blocks.remove(fb)
+        
+    def event_connection_add(self, source_fb, source_event, destination_fb, destination_event):
+        self.event_connections.append(((source_fb, source_event), (destination_fb, destination_event)))
+
+    def variable_connection_add(self, source_fb, source_variable, destination_fb, destination_variable):
+        self.variable_connections.append(((source_fb, source_variable), (destination_fb, destination_variable)))
 
     def read_through(self, fb, path):
         empty_block_flag = True
@@ -876,6 +885,9 @@ class Composite():
             if fb.y > max_y:
                 max_y = fb.y
         return max_x, max_y
+    
+    def save(self, path):
+        print('not implemented')
 
 class Identification():
     def __init__(self, standard='', classification='', app_domain='', function='', type='', description=''):
@@ -908,6 +920,9 @@ class Resource():
     
     def change_pos(self, pos_x, pos_y):
         self.x, self.y = pos_x, pos_y   
+        
+    def save(self, path):
+        print('not implemented')
     
 class Device():
     def __init__(self, name, type, comment='', x=0.0, y=0.0):
@@ -966,6 +981,9 @@ class Device():
     def resource_change_comment(self, resource, new_comment):
         self.resource.comment = new_comment
         
+    def save(self, path):
+        print('not implemented')
+        
 class Application():
     def __init__(self, name, comment=''):
         self.name = name
@@ -973,6 +991,9 @@ class Application():
         self.version_info = VersionInfo()
         self.identification = Identification()
         self.subapp_network = Composite()
+        
+    def save(self, path):
+        print('not implemented')
         
 class System():    
     def __init__(self, name='Untitled', comment=''):
@@ -1058,6 +1079,36 @@ class System():
         for connection in list(self.mapping):
             if resource.name == connection[1][1].name:
                 self.mapping_remove(connection)
+                
+    # ---------------------------- FILE --------------------------- #
+    
+    def get_file_name(self):
+        if self._file_path_name is not None:
+            return os.path.basename(self._file_path_name)
+        return None
+
+    def get_file_path_name(self):
+        return self._file_path_name
+
+    def get_name(self):
+        if self._file_path_name is not None:
+            return self.get_file_name()
+        elif self.name is not None:
+            return self.name
+        return 'Untitled'
+
+    def set_file_path_name(self, file_path_name):
+        self._file_path_name = file_path_name
+        self._name = self.get_name()
+
+    def clear_file_path_name(self):
+        self._file_path_name = None
+
+    def set_name(self, name):
+        if self._file_path_name is None:
+            self._name = name   
+            
+    # ------------------------------------------------------------- #  
     
     def save(self, file_path_name=None):
         if file_path_name is None:
@@ -1065,69 +1116,60 @@ class System():
                 return False
             file_path_name = self._file_path_name
         else:
+            file_path_name += '/'+self.name+".sys"
             self.set_file_path_name(file_path_name)
         
         f = open(file_path_name, 'w')
         f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
-        f.write(f'<FBType Name="{self.name}" Comment="{self.comment}">\n')
-        f.write('\t<Identification Standard=""/>\n')
-        f.write(f'\t<VersionInfo Version="" Author="AUTHOR" Date="{datetime.date.today()}"/>\n')
-        f.write('\t<InterfaceList>\n')
-        f.write('\t\t<EventInputs>\n')
-        for event in self.events:
-            if event.is_input:
-                if event.variables:
-                    f.write(f'\t\t\t<Event Name="{event.name}" Type="Event" Comment="{event.comment}">\n')
-                    for var in event.variables:
-                        f.write(f'\t\t\t\t<With Var="{var.name}"/>\n')
-                    f.write('\t\t\t</Event>\n')
-                else:
-                    f.write(f'\t\t\t<Event Name="{event.name}" Type="Event" Comment="{event.comment}"/>\n')
-
-        f.write('\t\t</EventInputs>\n')
-        f.write('\t\t<EventOutputs>\n')
-        for event in self.events:
-            if not event.is_input:
-                f.write(f'\t\t\t<Event Name="{event.name}" Type="Event" Comment="{event.comment}">\n')
-                for var in event.variables:
-                    f.write(f'\t\t\t\t<With Var="{var.name}"/>\n')
-                f.write('\t\t\t</Event>\n')
-        f.write('\t\t</EventOutputs>\n')
-        f.write('\t\t<InputVars>\n')
-        for var in self.variables:
-            if var.is_input:
-                f.write(f'\t\t\t<VarDeclaration Name="{var.name}" Type="{self.convert_type_py_to_xml(var.type)}" Comment="{var.comment}"/>\n')
-        f.write('\t\t</InputVars>\n')
-        f.write('\t\t<OutputVars>\n')
-        for var in self.variables:
-            if var.is_output:
-                f.write(f'\t\t\t<VarDeclaration Name="{var.name}" Type="{self.convert_type_py_to_xml(var.type)}" Comment="{var.comment}"/>\n')
-        f.write('\t\t</OutputVars>\n')
-        f.write('\t</InterfaceList>\n')
-        f.write('\t<BasicFB>\n')
-        f.write('\t\t<ECC>\n')
-        for state in self.ecc.states:
-            if state.actions:
-                f.write(f'\t\t\t<ECState Comment="{state.comment}" Name="{state.name}" x="{state.x}" y="{state.y}">\n')
-                for action in state.actions:
-                    if action.output_event:
-                        f.write(f'\t\t\t\t<ECAction Algorithm="{action.algorithm.name}" Output="{action.output_event.name}"/>\n')  # It should be state.algorithm.name (missing name attr)
-                    else:
-                        f.write(f'\t\t\t\t<ECAction Algorithm="{action.algorithm.name}"/>\n')
-                f.write('\t\t\t</ECState>\n')  
-            else:
-                f.write(f'\t\t\t<ECState Comment="{state.comment}" Name="{state.name}" x="{state.x}" y="{state.y}"/>\n')
-
-        for transition in self.ecc.transitions:
-            f.write(f'\t\t\t<ECTransition Comment="{transition.comment}" Condition="{transition.convert_condition_xml()}" Destination="{transition.to_state.name}" Source="{transition.from_state.name}" x="{transition.x}" y="{transition.y}"/>\n')    
-        f.write('\t\t</ECC>\n')  
-        if self.algorithms:
-            for algo in self.algorithms:
-                f.write(f'\t\t<Algorithm Name="{algo.name}" Comment="{algo.comment}">\n')
-                f.write(f'\t\t\t<ST Text="{algo.algorithm_str}"/>\n')
-                f.write(f'\t\t</Algorithm>\n')  
-        f.write('\t</BasicFB>\n')
-        f.write('</FBType>\n')
+        f.write(f'<System Name="{self.name}" Comment="{self.comment}">\n')
+        f.write(f'\t<Identification Standard="{self.identification.standard}" Classification="{self.identification.classification}" ApplicationDomain="{self.identification.app_domain}" Function="{self.identification.function}" Type="{self.identification.type}" Description="{self.identification.description}">\n')
+        f.write(f'\t</Identification>\n')
+        f.write(f'\t<VersionInfo Organization="{self.version_info.organization}" Version="{self.version_info.version}" Author="{self.version_info.author}" Date="{datetime.date.today()}" Remarks="{self.version_info.remarks}">\n')
+        f.write(f'\t</VersionInfo>\n')
+        for app in self.applications:
+            f.write(f'\t<Application Name="{app.name}" Comment="{app.comment}">\n')
+            f.write(f'\t\t<SubAppNetwork>\n')
+            for fb in app.subapp_network.function_blocks:
+                f.write(f'\t\t\t<FB Name="{fb.name}" Type="{fb.type}" Comment="{fb.comment}" x="{fb.x}" y="{fb.y}">\n')
+                for var in fb.variables:
+                    if var.value is not None:
+                        f.write(f'\t\t\t\t<Parameter Name="{var.name}" Value="{var.value}"/>\n')
+                f.write(f'\t\t\t</FB>\n')
+            f.write(f'\t\t\t<EventConnections>\n')
+            for connection in app.subapp_network.event_connections:
+                f.write(f'\t\t\t\t<Connection Source="{connection[0][0].name}.{connection[0][1].name}" Destination="{connection[1][0].name}.{connection[1][1].name}"/>\n')
+            f.write(f'\t\t\t</EventConnections>\n')
+            f.write(f'\t\t\t<DataConnections>\n')
+            for connection in app.subapp_network.variable_connections:
+                f.write(f'\t\t\t\t<Connection Source="{connection[0][0].name}.{connection[0][1].name}" Destination="{connection[1][0].name}.{connection[1][1].name}"/>\n')
+            f.write(f'\t\t\t</DataConnections>\n')
+            f.write(f'\t\t</SubAppNetwork>\n')
+            f.write('\t</Application>\n')
+        for device in self.devices:
+            f.write(f'\t<Device Name="{device.name}" Type="{device.type}" Comment="{device.comment}" x="{device.x}" y="{device.y}">\n')
+            for resource in device.resources:
+                f.write(f'\t\t<Resource Name="{resource.name}" Type="{resource.type}" Comment="{resource.comment}" x="{resource.x}" y="{resource.y}">\n')
+                f.write('\t\t\t<FBNetwork>\n')
+                for fb in resource.fb_network.function_blocks:
+                    f.write(f'\t\t\t\t<FB Name="{fb.name}" Type="{fb.type}" Comment="{fb.comment}" x="{fb.x}" y="{fb.y}">\n')
+                    for var in fb.variables:
+                        if var.value is not None:
+                            f.write(f'\t\t\t\t\t<Parameter Name="{var.name}" Value="{var.value}"/>\n')
+                    f.write(f'\t\t\t\t</FB>\n')
+                f.write(f'\t\t\t\t<EventConnections>\n')
+                for connection in app.subapp_network.event_connections:
+                    f.write(f'\t\t\t\t\t<Connection Source="{connection[0][0].name}.{connection[0][1].name}" Destination="{connection[1][0].name}.{connection[1][1].name}"/>\n')
+                f.write(f'\t\t\t\t</EventConnections>\n')
+                f.write(f'\t\t\t\t<DataConnections>\n')
+                for connection in app.subapp_network.variable_connections:
+                    f.write(f'\t\t\t\t\t<Connection Source="{connection[0][0].name}.{connection[0][1].name}" Destination="{connection[1][0].name}.{connection[1][1].name}"/>\n')
+                f.write(f'\t\t\t\t</DataConnections>\n')
+                f.write('\t\t\t</FBNetwork>\n')
+                f.write('\t\t</Resource>\n')
+            f.write('\t</Device>\n')
+        for map in self.mapping:
+            f.write(f'\t<Mapping From="{map[0][0].name}.{map[0][1].name}" To="{map[1][0].name}.{map[1][1].name}.{map[1][2].name}"/>\n')
+        f.write('</System>')
             
         return True
                 

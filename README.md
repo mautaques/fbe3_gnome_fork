@@ -6,7 +6,7 @@ An application for modelling function blocks based on IEC 61499.
  - Python3
  - GNOME Builder (Available only for LINUX)
  - Flatpak (Required for installing GNOME Builder)
-
+    
 ### How to install Builder:
  1. Install Flatpak:
     ```

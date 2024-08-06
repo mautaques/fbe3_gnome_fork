@@ -11,6 +11,8 @@ class ExportWindow(Gtk.Box, PageMixin):
         
         self.system = system
         self.window = window
+        self.elements = list()
+        self.export_list = list()
         self.current_selected_row = None
         
         self.vbox_left = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, vexpand=True, width_request=400)   
@@ -97,6 +99,7 @@ class ExportWindow(Gtk.Box, PageMixin):
         self.selected_path_text = Gtk.Entry(placeholder_text="No path selected", hexpand=True)
         self.export_path_box.append(self.selected_path_text)
         self.export_btn = Gtk.Button(label="EXPORT", margin_top=8)
+        self.export_btn.connect("clicked", self.on_export_button)
         self.export_box.append(self.export_btn)
         
 
@@ -105,7 +108,6 @@ class ExportWindow(Gtk.Box, PageMixin):
         self.export_frame.get_style_context().add_class("squared")
 
         self.vbox_right.append(self.export_frame)
-
         
         self.system_listbox.connect("row-selected", self.on_row_selected)
         
@@ -119,6 +121,7 @@ class ExportWindow(Gtk.Box, PageMixin):
         self.system_box.append(self.system_listbox)
         for app in self.system.applications:
             if app.subapp_network.function_blocks:
+                self.elements.append(app)
                 app_expander = Gtk.Expander(label=app.name)
                 fb_listbox = Gtk.ListBox()
                 fb_listbox.set_selection_mode(Gtk.SelectionMode.SINGLE)
@@ -126,11 +129,14 @@ class ExportWindow(Gtk.Box, PageMixin):
                 app_expander.set_child(fb_listbox)
                 self.app_listbox.append(app_expander)
                 for fb in app.subapp_network.function_blocks:
+                    self.elements.append(fb)
                     self.add_row(fb_listbox, fb.name, 10)
             else:
+                self.elements.append(app)
                 self.add_row(self.app_listbox, app.name)
         for dev in self.system.devices:
             if dev.resources:
+                self.elements.append(dev)
                 dev_expander = Gtk.Expander(label=dev.name)
                 device_listbox = Gtk.ListBox()
                 device_listbox.set_selection_mode(Gtk.SelectionMode.SINGLE)
@@ -138,8 +144,10 @@ class ExportWindow(Gtk.Box, PageMixin):
                 dev_expander.set_child(device_listbox)
                 self.app_listbox.append(dev_expander)
                 for res in dev.resources:
+                    self.elements.append(res)
                     self.add_row(device_listbox, res.name)
             else:
+                self.elements.append(dev)
                 self.add_row(self.app_listbox, dev.name)
                     
     def on_row_selected(self, listbox, row):
@@ -181,12 +189,18 @@ class ExportWindow(Gtk.Box, PageMixin):
     def on_export_right_button(self, widget):
         print(f'row selected {self.current_selected_row}')
         self.add_row(self.export_listbox, self.current_selected_row, -5)
+        self.export_list.append(self.current_selected_row)
         
     def on_export_left_button(self, widget):
        row = self.export_listbox.get_selected_row()
        self.export_listbox.remove(row)
        
     def on_export_button(self, widget):
-        pass
+        path = self.path_buffer.get_text()
+        for element in self.export_list:
+            for elem in self.elements:
+                if elem.name == element:
+                    elem.save(path)
+        self.system.save(path)
     
     
