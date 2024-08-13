@@ -63,9 +63,12 @@ An application for modelling function blocks based on IEC 61499.
 - Go to previous application `Ctrl+A`
 - Go to last accessed page `Ctrl+B`
 - Add type to application `Ctrl+Alt+N`
+- Export project `Ctrl+E`
 
 #### Elements with inside elements (e.g., Composite FB, FB's ECC, Device's FB Network) can be accessed by using the inspect tool and clicking on the element.
 ![inspect](https://github.com/user-attachments/assets/1d17a924-6960-4327-bf60-186cdcf0d16d)
 ![image](https://github.com/user-attachments/assets/6e4f72ff-a5fa-42c5-a34e-7c2f164ffb68)
 
+#### The whole project or part of it can be exported through the export page(Ctrl+E):
+![image](https://github.com/user-attachments/assets/979f62e8-1759-4cc2-af8c-70cfce70df18)
 
