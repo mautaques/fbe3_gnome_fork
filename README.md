@@ -64,7 +64,7 @@ An application for modelling function blocks based on IEC 61499.
 - Go to last accessed page `Ctrl+B`
 - Add type to application `Ctrl+Alt+N`
 
-#### Elements with inside elements (e.g., Composite FB, ECC, Device's FB Network) can be accessed by using the inspect tool and clicking on the element.
+#### Elements with inside elements (e.g., Composite FB, FB's ECC, Device's FB Network) can be accessed by using the inspect tool and clicking on the element.
 ![inspect](https://github.com/user-attachments/assets/1d17a924-6960-4327-bf60-186cdcf0d16d)
 ![image](https://github.com/user-attachments/assets/6e4f72ff-a5fa-42c5-a34e-7c2f164ffb68)
 
