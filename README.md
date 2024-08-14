@@ -1,4 +1,4 @@
-# Function Block Editor
+# Function Block Environment
 
 An application for modelling function blocks based on IEC 61499. 
 
