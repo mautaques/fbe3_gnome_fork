@@ -53,7 +53,7 @@ An application for modelling function blocks based on IEC 61499.
 ## IMAGE
 
 
-#### Upon creating a new project, it creates a blank unnamed system (which can refered as project) and application. The main page of every project is the System Information. Through this page is possible to access every element of the project the user whishes to inspect by double clicking at element.
+#### Upon creating a new project, it creates a blank unnamed system (which can refered as project) and application. The main page of every project it's the System Information. Through this page is possible to access every element of the project the user whishes to inspect by double clicking at element.
 ![accesselementdouble](https://github.com/user-attachments/assets/28aff462-35e5-478d-88c7-76f85f3e0805)
 ![image](https://github.com/user-attachments/assets/72f2c940-6569-42c8-806b-093317cc23ad)
 
