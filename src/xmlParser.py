@@ -8,10 +8,13 @@ sys.path.insert(1, base_path)
 
 from .function_block import *
 
-def convert_xml_basic_fb(xml):
-    print("XML: " + cur_path)
+def convert_xml_basic_fb(xml, library):
+    print(f'XML PATH = {xml}\nLIBRARY PATH = {library}')
     fb_import_list = set()
-    tree = ET.parse(xml)
+    try:
+        tree = ET.parse(xml)
+    except:
+        print('invalid path')
     root = tree.getroot()
     fb_diagram = None
     for read in root.iter("FBType"):
@@ -75,7 +78,7 @@ def convert_xml_basic_fb(xml):
     for read in root.iter("FBNetwork"):
         fb_diagram = Composite()    
         for read_1 in read.iter("FB"):
-            fb,_ = convert_xml_basic_fb('Projects/fbe3_gnome/src/models/fb_library/'+read_1.get("Type")+'.fbt')  # Blocks declared in FBNetwork must be inside src/models/diac_library
+            fb,_ = convert_xml_basic_fb(library+'/'+read_1.get("Type")+'.fbt', library)  # Blocks declared in FBNetwork must be inside src/models/diac_library
             fb.change_pos(float(read_1.get("x"))/4, float(read_1.get("y"))/4)
             fb.name = read_1.get("Name")
             fb.type = read_1.get("Type")
@@ -346,7 +349,7 @@ def convert_xml_basic_fb(xml):
     # print("done")
     return FB, fb_diagram
 
-def convert_xml_resource(xml):
+def convert_xml_resource(xml, library):
     tree = ET.parse(xml)
     root = tree.getroot()
     for read in root.iter("ResourceType"):
@@ -377,7 +380,7 @@ def convert_xml_resource(xml):
     for read in root.iter("FBNetwork"):
         fb_diagram = Composite()
         for read_1 in read.iter("FB"):
-            fb, _ = convert_xml_basic_fb('Projects/fbe3_gnome/src/models/fb_library/'+read_1.get("Type")+'.fbt')  # Blocks declared in FBNetwork must be inside src/models/diac_library
+            fb, _ = convert_xml_basic_fb(library+'/'+read_1.get("Type")+'.fbt', library)  # Blocks declared in FBNetwork must be inside src/models/diac_library
             fb.change_pos(float(read_1.get("x"))/3, float(read_1.get("y"))/3)
             if fb.x < 100:
                 fb.x = 100
@@ -392,7 +395,7 @@ def convert_xml_resource(xml):
     return RESOURCE
 
 
-def convert_xml_system(xml):
+def convert_xml_system(xml, library):
     tree = ET.parse(xml)
     root = tree.getroot()
     fb_import_list = set()
@@ -428,7 +431,7 @@ def convert_xml_system(xml):
         for read_1 in read.iter("SubAppNetwork"):
             fb_diagram = Composite()
             for read_2 in read_1.iter("FB"):
-                fb, _ = convert_xml_basic_fb('Projects/fbe3_gnome/src/models/fb_library/'+read_2.get("Type")+'.fbt')  # Blocks declared in FBNetwork must be inside src/models/diac_library
+                fb, _ = convert_xml_basic_fb(library+'/'+read_2.get("Type")+'.fbt', library)  # Blocks declared in FBNetwork must be inside src/models/diac_library
                 fb.change_pos(float(read_2.get("x"))/3, float(read_2.get("y"))/3)
                 fb.name = read_2.get("Name")
                 fb.type = read_2.get("Type")
@@ -497,12 +500,12 @@ def convert_xml_system(xml):
             
             for read_2 in read_1.iter("FBNetwork"):
                 fb_diagram = Composite()
-                resource = convert_xml_resource('Projects/fbe3_gnome/src/models/fb_library/'+resource_type+'.res')
+                resource = convert_xml_resource(library+resource_type+'.res')
                 resource.name = resource_name
                 resource.change_pos(25, 25)
                 fb_diagram.add_function_block(resource.fb_network.function_blocks[0])
                 for read_3 in read_2.iter("FB"):
-                    fb, _ = convert_xml_basic_fb('Projects/fbe3_gnome/src/models/fb_library/'+read_3.get("Type")+'.fbt')  # Blocks declared in FBNetwork must be inside src/models/diac_library
+                    fb, _ = convert_xml_basic_fb(library+read_3.get("Type")+'.fbt', library)  # Blocks declared in FBNetwork must be inside src/models/diac_library
                     fb.change_pos(float(read_3.get("x"))/3, float(read_3.get("y"))/3)
                     if fb.x < 100:
                         fb.x = fb.x + 100

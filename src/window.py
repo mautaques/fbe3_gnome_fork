@@ -73,6 +73,7 @@ class FbeWindow(Adw.ApplicationWindow):
         # self.menu = Gtk.PopoverMenuBar().new_from_model(self.menubar)
         # self.vbox_window.append(self.menu)
         self.selected_tool = None
+        self.library = None  # Library path to load nested elements
         self.notebook.connect('create-window', self.on_notebookbook_create_window)
         self.notebook.connect('page-removed', self.on_notebookbook_page_removed)
         self.add_fb_btn.connect('clicked', self.add_fb_dialog)
@@ -130,6 +131,7 @@ class FbeWindow(Adw.ApplicationWindow):
         return factory
 
     def load_files(self, directory="Projects/fbe3_gnome/src/models/fb_library/"):
+        self.library = directory
         directory = Gio.File.new_for_path(directory)
         self.directory_list.set_file(directory)
         
@@ -205,7 +207,7 @@ class FbeWindow(Adw.ApplicationWindow):
             self.notebook.set_visible(True)
             self.labels_box.set_visible(False)
             window = self.get_ancestor(Gtk.Window)
-            system = convert_xml_system(file_name)
+            system = convert_xml_system(file_name, self.library)
             fb_project = ProjectEditor(window, system, current_tool=self.selected_tool)
             self.add_tab_editor(fb_project, system.name, None)
     
@@ -216,13 +218,13 @@ class FbeWindow(Adw.ApplicationWindow):
         # If the user selected a file...
         if file is not None:
             # ... open it
-            fb_choosen, _  = convert_xml_basic_fb(file_name)
+            fb_choosen, _  = convert_xml_basic_fb(file_name, self.library)
             fb_diagram = Composite()
             fb_diagram.add_function_block(fb_choosen)
             self.add_tab_editor(fb_diagram, fb_choosen.name, fb_choosen)
 
     def on_import_resource_response(self, type_name):
-        resource = convert_xml_resource('Projects/fbe3_gnome/src/models/fb_library/'+type_name+'.res')
+        resource = convert_xml_resource(self.library+type_name+'.res')
         return resource
 
     def open_file(self, file):
@@ -267,7 +269,7 @@ class FbeWindow(Adw.ApplicationWindow):
         self.vbox_window.append(toast)
         # If the user selected a file...
         if file is not None:
-            fb_choosen,_  = convert_xml_basic_fb(file_name)
+            fb_choosen,_  = convert_xml_basic_fb(file_name, self.library)
             if isinstance(self.get_current_tab_widget().current_page, FunctionBlockEditor):
                 fb_editor = self.get_current_tab_widget().current_page
                 fb_editor.selected_fb = fb_choosen

@@ -459,7 +459,7 @@ class FunctionBlockEditor(PageMixin, Gtk.Box):
             self.selected_fb = fb
             fb_diagram = fb.get_fb_network()
             if fb_diagram != None:
-                fb_editor = FunctionBlockEditor(fb_diagram=fb_diagram, inspected_block=fb)
+                fb_editor = FunctionBlockEditor(fb_diagram=fb_diagram, inspected_block=fb, project=self.project)
                 self.project.last_page = self.project.current_page
                 self.project.last_page_label = self.project.current_page_label.get_label()
                 self.project.current_page = fb_editor
